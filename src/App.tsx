@@ -1,13 +1,13 @@
-import { useGetProducts } from './api/getProducts';
+import { useGetMachines } from './api/getMachines';
 
 function App() {
   const {
-    data: products,
+    data: machines,
     isLoading,
     isFetching,
     error,
     refetch,
-  } = useGetProducts();
+  } = useGetMachines();
 
   return (
     <main className="min-h-screen bg-slate-50 px-6 py-16 text-slate-900">
@@ -23,16 +23,16 @@ function App() {
             <p className="text-red-700" role="alert">
               {error.message}
             </p>
-          ) : products && products.length ? (
+          ) : machines && machines.length ? (
             <ul className="divide-y divide-slate-100">
-              {products.map((product) => (
-                <li className="py-3" key={product.id}>
-                  {product.name}
+              {machines.map((machine) => (
+                <li className="py-3" key={machine.name}>
+                  {machine.name}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-slate-500">Belum ada produk.</p>
+            <p className="text-slate-500">Belum ada mesin.</p>
           )}
         </div>
         <button

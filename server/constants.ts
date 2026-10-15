@@ -1,0 +1,4 @@
+const SPREADSHEET_ID = '1BlBVUmEESIOUQZhr2TqJ42R_9Xh7pzzhSc03FXPEVGo';
+const SHEET_NAME_PROBLEM = 'Problem';
+const SHEET_NAME_MACHINE = 'Daftar Mesin';
+const SHEET_NAME_MECHANIC = 'Mekanik';

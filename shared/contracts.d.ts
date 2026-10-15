@@ -1,12 +1,11 @@
-export type Product = {
-  id: string;
+export type Machine = {
   name: string;
 };
 
-export type ProductInput = {
+export type MachineInput = {
   name: string;
 };
 
 export type GasFunctions = {
-  getProducts: () => Product[];
+  getMachines: () => Machine[];
 };

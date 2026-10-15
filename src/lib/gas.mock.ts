@@ -1,6 +1,6 @@
-import { createProduct } from '@/mocks/product';
+import { createMachine } from '@/mocks/machine';
 import type { GasFunctions } from '../../shared/contracts';
 
 export const gasMock: GasFunctions = {
-  getProducts: () => Array.from({ length: 10 }).map(createProduct),
+  getMachines: () => Array.from({ length: 10 }).map(createMachine),
 };

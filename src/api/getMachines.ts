@@ -1,9 +1,9 @@
 import { runGas } from '@/lib/gas';
 import { useQuery } from '@tanstack/react-query';
 
-export const useGetProducts = () => {
+export const useGetMachines = () => {
   return useQuery({
-    queryKey: ['products'],
-    queryFn: () => runGas('getProducts'),
+    queryKey: ['machines'],
+    queryFn: () => runGas('getMachines'),
   });
 };
