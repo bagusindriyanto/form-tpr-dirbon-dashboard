@@ -1,1 +1,1 @@
-export type { Machine, MachineInput } from '../../shared/contracts';
+export type { Machine } from '../../shared/contracts';

@@ -1,3 +1,4 @@
+import OutputFormDialog from './components/OutputFormDialog';
 import ProblemFormDialog from './components/ProblemFormDialog';
 import ProblemListDialog from './components/ProblemListDialog';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
@@ -9,11 +10,12 @@ function App() {
       <Card className="w-full max-w-2xl p-6">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">
-            Form Problem Pattern Sewer
+            Update Data TPR Dirbon
           </CardTitle>
         </CardHeader>
         <Separator className="my-2" />
         <CardContent className="px-0 flex flex-col gap-3">
+          <OutputFormDialog />
           <ProblemFormDialog />
           <ProblemListDialog />
         </CardContent>
