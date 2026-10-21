@@ -1,48 +1,23 @@
-import { useGetMachines } from './api/getMachines';
+import ProblemFormDialog from './components/ProblemFormDialog';
+import ProblemListDialog from './components/ProblemListDialog';
+import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
+import { Separator } from './components/ui/separator';
 
 function App() {
-  const {
-    data: machines,
-    isLoading,
-    isFetching,
-    error,
-    refetch,
-  } = useGetMachines();
-
   return (
-    <main className="min-h-screen bg-slate-50 px-6 py-16 text-slate-900">
-      <section className="mx-auto max-w-xl rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-bold">React + Google Apps Script</h1>
-        <h2 className="mt-8 text-lg font-semibold">Daftar produk</h2>
-        <div className="mt-4" aria-live="polite" aria-busy={isLoading}>
-          {isLoading ? (
-            <p className="text-slate-500" role="status">
-              Memuat produk…
-            </p>
-          ) : error ? (
-            <p className="text-red-700" role="alert">
-              {error.message}
-            </p>
-          ) : machines && machines.length ? (
-            <ul className="divide-y divide-slate-100">
-              {machines.map((machine) => (
-                <li className="py-3" key={machine.name}>
-                  {machine.name}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-slate-500">Belum ada mesin.</p>
-          )}
-        </div>
-        <button
-          className="mt-6 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
-          onClick={() => refetch()}
-          disabled={isFetching}
-        >
-          Muat ulang
-        </button>
-      </section>
+    <main className="grid place-items-center px-6 min-h-screen bg-muted">
+      <Card className="w-full max-w-2xl p-6">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold">
+            Form Problem Pattern Sewer
+          </CardTitle>
+        </CardHeader>
+        <Separator className="my-2" />
+        <CardContent className="px-0 flex flex-col gap-3">
+          <ProblemFormDialog />
+          <ProblemListDialog />
+        </CardContent>
+      </Card>
     </main>
   );
 }
