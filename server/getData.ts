@@ -15,9 +15,13 @@ function getLines(): ReturnType<GasFunctions['getLines']> {
 }
 
 function getMembers(): ReturnType<GasFunctions['getMembers']> {
-  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-  const sheet = spreadsheet.getSheetByName(SHEET_NAME_MEMBER);
-  if (!sheet) throw new Error(`Sheet '${SHEET_NAME_MEMBER}' tidak ditemukan`);
+  const {
+    database: { spreadsheetId, sheetNames },
+  } = SPREADSHEET_CONFIG;
+
+  const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+  const sheet = spreadsheet.getSheetByName(sheetNames.member);
+  if (!sheet) throw new Error(`Sheet '${sheetNames.member}' tidak ditemukan`);
 
   const [, ...data]: CellValue[][] = sheet.getDataRange().getValues();
 

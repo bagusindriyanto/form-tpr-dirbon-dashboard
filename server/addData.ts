@@ -1,7 +1,10 @@
 function addTarget(formData: TargetFormData) {
-  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-  const sheet = spreadsheet.getSheetByName(SHEET_NAME_TARGET);
-  if (!sheet) throw new Error(`Sheet '${SHEET_NAME_TARGET}' tidak ditemukan`);
+  const {
+    database: { spreadsheetId, sheetNames },
+  } = SPREADSHEET_CONFIG;
+  const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+  const sheet = spreadsheet.getSheetByName(sheetNames.target);
+  if (!sheet) throw new Error(`Sheet '${sheetNames.target}' tidak ditemukan`);
 
   const createdAt = new Date();
   const { line, workingHour, leader, operators, target } = formData;
@@ -19,9 +22,12 @@ function addTarget(formData: TargetFormData) {
 }
 
 function addOutput(formData: OutputFormData) {
-  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-  const sheet = spreadsheet.getSheetByName(SHEET_NAME_OUTPUT);
-  if (!sheet) throw new Error(`Sheet '${SHEET_NAME_OUTPUT}' tidak ditemukan`);
+  const {
+    database: { spreadsheetId, sheetNames },
+  } = SPREADSHEET_CONFIG;
+  const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+  const sheet = spreadsheet.getSheetByName(sheetNames.output);
+  if (!sheet) throw new Error(`Sheet '${sheetNames.output}' tidak ditemukan`);
 
   const lastRow = sheet.getLastRow();
   const createdAt = new Date();
