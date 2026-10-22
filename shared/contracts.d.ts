@@ -27,8 +27,23 @@ export type TargetFormData = {
   target: number;
 };
 
+export type OutputFormData = {
+  line: string;
+  shift: '1' | '2';
+  type: 'SPO' | 'GR';
+  spo?: string;
+  style: string;
+  prc: string;
+  size: string;
+  hour: number;
+  actual: number;
+  repair: number;
+  reject: number;
+};
+
 export type GasFunctions = {
   getLines: () => LineGroup[];
   getMembers: () => { leaders: Leader[]; operators: Operator[] };
   addTarget: (formData: TargetFormData) => void;
+  addOutput: (formData: OutputFormData) => void;
 };

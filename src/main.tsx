@@ -14,7 +14,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <App />
-      <Toaster richColors />
+      <Toaster richColors position="top-center" />
       <ReactQueryDevtools buttonPosition="bottom-left" initialIsOpen={false} />
     </QueryClientProvider>
   </StrictMode>,

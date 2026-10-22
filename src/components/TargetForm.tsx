@@ -56,7 +56,7 @@ export default function TargetForm() {
 
   return (
     <>
-      <form id="output-form" onSubmit={form.handleSubmit(onSubmit)}>
+      <form id="target-form" onSubmit={form.handleSubmit(onSubmit)}>
         <div className="overflow-y-auto max-h-[70vh] -mx-4 px-4">
           <FieldGroup>
             <Controller
@@ -202,7 +202,7 @@ export default function TargetForm() {
         <Button type="button" variant="outline" onClick={() => form.reset()}>
           Reset
         </Button>
-        <Button type="submit" disabled={isPending} form="output-form">
+        <Button type="submit" disabled={isPending} form="target-form">
           {isPending ? 'Menyimpan...' : 'Simpan'}
         </Button>
       </DialogFooter>

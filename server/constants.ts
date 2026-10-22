@@ -4,3 +4,4 @@ const SHEET_NAME_LINE = 'Line';
 const SHEET_NAME_MECHANIC = 'Mekanik';
 const SHEET_NAME_MEMBER = 'Operator';
 const SHEET_NAME_TARGET = 'Target';
+const SHEET_NAME_OUTPUT = 'Output';

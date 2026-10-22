@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { SquarePlusIcon } from 'lucide-react';
+import OutputForm from './OutputForm';
 
 export default function OutputFormDialog() {
   return (
@@ -23,6 +24,7 @@ export default function OutputFormDialog() {
         <DialogHeader>
           <DialogTitle>Form Update Output</DialogTitle>
         </DialogHeader>
+        <OutputForm />
       </DialogContent>
     </Dialog>
   );
