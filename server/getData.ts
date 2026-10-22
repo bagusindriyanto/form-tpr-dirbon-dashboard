@@ -1,11 +1,11 @@
 function getLines(): ReturnType<GasFunctions['getLines']> {
-  const tprLines: TPR[] = Array.from(
+  const tprLines = Array.from(
     { length: 20 },
-    (_, i) => `T${String(i + 1).padStart(2, '0')}` as TPR,
+    (_, i) => `T${String(i + 1).padStart(2, '0')}`,
   );
-  const dirbonLines: Dirbon[] = Array.from(
+  const dirbonLines = Array.from(
     { length: 5 },
-    (_, i) => `D${String(i + 1).padStart(2, '0')}` as Dirbon,
+    (_, i) => `D${String(i + 1).padStart(2, '0')}`,
   );
 
   return [

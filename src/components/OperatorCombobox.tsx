@@ -98,7 +98,7 @@ export default function OperatorCombobox({
           ) : isError ? (
             'Gagal memuat data operator.'
           ) : (
-            'Tidak ditemukan.'
+            'Data tidak ditemukan.'
           )}
         </ComboboxEmpty>
 

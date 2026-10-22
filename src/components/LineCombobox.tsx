@@ -1,4 +1,4 @@
-import type { LineGroup, TPR, Dirbon } from '@/types/line';
+import type { LineGroup } from '@/types/line';
 import {
   Combobox,
   ComboboxCollection,
@@ -32,7 +32,11 @@ export default function LineCombobox({
   const { data: groups = EMPTY, isPending, isError } = useGetLines();
 
   return (
-    <Combobox items={groups}>
+    <Combobox
+      items={groups}
+      value={value || null}
+      onValueChange={(line) => onValueChange(line ?? '')}
+    >
       <ComboboxInput
         {...inputProps}
         showClear
@@ -45,7 +49,7 @@ export default function LineCombobox({
           ) : isError ? (
             'Gagal memuat data meja.'
           ) : (
-            'Tidak ditemukan.'
+            'Data tidak ditemukan.'
           )}
         </ComboboxEmpty>
 
@@ -56,7 +60,7 @@ export default function LineCombobox({
               <ComboboxGroup items={group.items}>
                 <ComboboxLabel>{group.value}</ComboboxLabel>
                 <ComboboxCollection>
-                  {(line: TPR | Dirbon) => (
+                  {(line: string) => (
                     <ComboboxItem key={line} value={line}>
                       {line}
                     </ComboboxItem>

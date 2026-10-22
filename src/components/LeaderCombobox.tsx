@@ -64,7 +64,7 @@ export default function LeaderCombobox({
           ) : isError ? (
             'Gagal memuat data leader.'
           ) : (
-            'Tidak ditemukan.'
+            'Data tidak ditemukan.'
           )}
         </ComboboxEmpty>
 
@@ -77,7 +77,7 @@ export default function LeaderCombobox({
                     {leader.name}
                   </ItemTitle>
                   <ItemDescription>
-                    {leader.nip} · {leader.job}
+                    {leader.nip} · {leader.section} · {leader.job}
                   </ItemDescription>
                 </ItemContent>
               </Item>

@@ -1,10 +1,6 @@
-type Digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
-export type TPR = `T${Digit}${Digit}`;
-export type Dirbon = `D${Digit}${Digit}`;
-
 export type LineGroup = {
   value: 'TPR' | 'Dirbon';
-  items: (TPR | Dirbon)[];
+  items: string[];
 };
 
 export type Leader = {
@@ -24,9 +20,11 @@ export type Operator = {
 };
 
 export type TargetFormData = {
-  line: TPR | Dirbon;
+  line: string;
+  workingHour: number;
   leader: Leader['nip'];
   operators: Operator['nip'][];
+  target: number;
 };
 
 export type GasFunctions = {

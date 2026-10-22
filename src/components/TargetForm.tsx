@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/field';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import type { TargetFormData } from '../../shared/contracts';
 import { useAddTarget } from '@/api/addTarget';
 import LineCombobox from './LineCombobox';
@@ -18,12 +19,18 @@ import LeaderCombobox from './LeaderCombobox';
 import OperatorCombobox from './OperatorCombobox';
 
 const formSchema = z.object({
-  line: z.string().min(1, 'Pilih satu meja'),
-  leader: z.string().min(1, 'Pilih satu leader'),
-  operators: z
-    .array(z.string())
-    .min(1, 'Pilih minimal satu operator')
-    .max(5, 'Maksimal lima operator'),
+  line: z.string().min(1, 'Pilih satu meja.'),
+  workingHour: z
+    .number({ error: 'Jam kerja wajib diisi.' })
+    .int('Jam kerja harus bilangan bulat.')
+    .min(1, 'Minimal 1 jam.')
+    .max(12, 'Maksimal 12 jam.'),
+  leader: z.string().min(1, 'Pilih satu leader.'),
+  operators: z.array(z.string()).min(1, 'Pilih minimal satu operator.'),
+  target: z
+    .number({ error: 'Target wajib diisi.' })
+    .int('Target harus bilangan bulat.')
+    .min(1, 'Target minimal 1.'),
 }) satisfies z.ZodType<TargetFormData>;
 
 type FormValues = z.infer<typeof formSchema>;
@@ -37,10 +44,12 @@ export default function TargetForm() {
   });
 
   function onSubmit(values: FormValues) {
-    console.log(values);
     toast.promise(mutateAsync(values), {
       loading: 'Menyimpan...',
-      success: 'Data berhasil disimpan!',
+      success: () => {
+        form.reset();
+        return 'Data berhasil disimpan!';
+      },
       error: 'Data gagal disimpan!',
     });
   }
@@ -55,7 +64,7 @@ export default function TargetForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-line">Pilih meja</FieldLabel>
+                  <FieldLabel htmlFor="form-line">Meja</FieldLabel>
                   <LineCombobox
                     id="form-line"
                     ref={field.ref}
@@ -72,11 +81,47 @@ export default function TargetForm() {
             />
 
             <Controller
+              name="workingHour"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="form-working-hour">Jam Kerja</FieldLabel>
+                  <Input
+                    {...field}
+                    value={
+                      field.value == null || Number.isNaN(field.value)
+                        ? ''
+                        : field.value
+                    }
+                    onChange={(event) =>
+                      field.onChange(event.target.valueAsNumber)
+                    }
+                    id="form-working-hour"
+                    aria-invalid={fieldState.invalid}
+                    type="number"
+                    min={1}
+                    max={12}
+                    step={1}
+                    inputMode="numeric"
+                    placeholder="Contoh: 8"
+                    autoComplete="off"
+                  />
+                  <FieldDescription>
+                    Lama jam kerja dalam satu hari (1–12 jam).
+                  </FieldDescription>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+
+            <Controller
               name="leader"
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-leader">Pilih Leader</FieldLabel>
+                  <FieldLabel htmlFor="form-leader">Leader</FieldLabel>
                   <LeaderCombobox
                     id="form-leader"
                     ref={field.ref}
@@ -98,7 +143,7 @@ export default function TargetForm() {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="form-operators">
-                    Pilih Operator ({field.value.length})
+                    Operator ({field.value.length})
                   </FieldLabel>
                   <OperatorCombobox
                     id="form-operators"
@@ -111,6 +156,38 @@ export default function TargetForm() {
                   <FieldDescription>
                     Boleh memilih lebih dari satu operator.
                   </FieldDescription>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="target"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="form-target">Target</FieldLabel>
+                  <Input
+                    {...field}
+                    value={
+                      field.value == null || Number.isNaN(field.value)
+                        ? ''
+                        : field.value
+                    }
+                    onChange={(event) =>
+                      field.onChange(event.target.valueAsNumber)
+                    }
+                    id="form-target"
+                    aria-invalid={fieldState.invalid}
+                    type="number"
+                    min={1}
+                    inputMode="numeric"
+                    placeholder="Contoh: 100"
+                    autoComplete="off"
+                  />
+                  <FieldDescription>Target komitmen.</FieldDescription>
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
