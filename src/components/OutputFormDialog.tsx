@@ -25,8 +25,8 @@ export default function OutputFormDialog() {
         <DialogHeader>
           <DialogTitle>Form Update Output</DialogTitle>
           <DialogDescription>Masukkan data operator.</DialogDescription>
-          <OutputForm />
         </DialogHeader>
+        <OutputForm />
       </DialogContent>
     </Dialog>
   );

@@ -10,22 +10,31 @@ function getMachines(): ReturnType<GasFunctions['getMachines']> {
   return data.flat().map((value): Machine => ({ name: toString(value) }));
 }
 
-function getOperators(): ReturnType<GasFunctions['getOperators']> {
+function getMembers(): ReturnType<GasFunctions['getMembers']> {
   const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-  const sheet = spreadsheet.getSheetByName(SHEET_NAME_OPERATOR);
-  if (!sheet) throw new Error(`Sheet '${SHEET_NAME_OPERATOR}' tidak ditemukan`);
+  const sheet = spreadsheet.getSheetByName(SHEET_NAME_MEMBER);
+  if (!sheet) throw new Error(`Sheet '${SHEET_NAME_MEMBER}' tidak ditemukan`);
 
   const [, ...data]: CellValue[][] = sheet.getDataRange().getValues();
 
-  return data
-    .map(
-      (row): Operator => ({
-        nip: toString(row[0]),
-        name: toString(row[1]),
-        division: toString(row[2]),
-        section: toString(row[3]),
-        job: toString(row[4]),
-      }),
-    )
-    .filter((operator) => !!operator.nip);
+  const leaders: Leader[] = [];
+  const operators: Operator[] = [];
+
+  data.forEach((row) => {
+    const nip = toString(row[0]);
+    const name = toString(row[1]);
+    const division = toString(row[2]);
+    const section = toString(row[3]);
+    const job = toString(row[4]);
+
+    if (!nip) return;
+
+    if (job.toLowerCase().includes('leader')) {
+      leaders.push({ nip, name, division, section, job });
+    } else {
+      operators.push({ nip, name, division, section, job });
+    }
+  });
+
+  return { leaders, operators };
 }

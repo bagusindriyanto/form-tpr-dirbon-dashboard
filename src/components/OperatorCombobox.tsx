@@ -52,20 +52,20 @@ export default function OperatorCombobox({
   );
   const selected = value
     .map((nip) => byNip.get(nip))
-    .filter((operator): operator is Operator => operator !== undefined);
+    .filter((operator) => operator !== undefined);
 
   return (
     <Combobox
       multiple
       items={groups}
       value={selected}
-      onValueChange={(operators: Operator[]) =>
+      onValueChange={(operators) =>
         onValueChange(operators.map((operator) => operator.nip))
       }
-      itemToStringLabel={(operator: Operator) => operator.name}
-      itemToStringValue={(operator: Operator) => operator.nip}
-      isItemEqualToValue={(a: Operator, b: Operator) => a.nip === b.nip}
-      filter={(operator: Operator, query: string) =>
+      itemToStringLabel={(operator) => operator.name}
+      itemToStringValue={(operator) => operator.nip}
+      isItemEqualToValue={(a, b) => a.nip === b.nip}
+      filter={(operator, query) =>
         [operator.name, operator.nip, operator.job, operator.section].some(
           (text) => contains(text, query),
         )
