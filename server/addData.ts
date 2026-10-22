@@ -4,7 +4,14 @@ function addOutput(formData: TargetFormData) {
   if (!sheet) throw new Error(`Sheet '${SHEET_NAME_TARGET}' tidak ditemukan`);
 
   const createdAt = new Date();
-  const { leader, operators } = formData;
+  const { line, leader, operators } = formData;
   const manPower = operators.length;
-  sheet.appendRow([createdAt, manPower, null, leader, operators.join(', ')]);
+  sheet.appendRow([
+    createdAt,
+    line,
+    manPower,
+    null,
+    leader,
+    operators.join(', '),
+  ]);
 }

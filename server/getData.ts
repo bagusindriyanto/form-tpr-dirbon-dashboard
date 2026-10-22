@@ -1,13 +1,17 @@
-function getMachines(): ReturnType<GasFunctions['getMachines']> {
-  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-  const sheet = spreadsheet.getSheetByName(SHEET_NAME_MACHINE);
-  if (!sheet) throw new Error(`Sheet '${SHEET_NAME_MACHINE}' tidak ditemukan`);
+function getLines(): ReturnType<GasFunctions['getLines']> {
+  const tprLines: TPR[] = Array.from(
+    { length: 20 },
+    (_, i) => `T${String(i + 1).padStart(2, '0')}` as TPR,
+  );
+  const dirbonLines: Dirbon[] = Array.from(
+    { length: 5 },
+    (_, i) => `D${String(i + 1).padStart(2, '0')}` as Dirbon,
+  );
 
-  const data: CellValue[][] = sheet
-    .getRange(2, 2, sheet.getLastRow() - 1, 1)
-    .getValues();
-
-  return data.flat().map((value): Machine => ({ name: toString(value) }));
+  return [
+    { value: 'TPR', items: tprLines },
+    { value: 'Dirbon', items: dirbonLines },
+  ];
 }
 
 function getMembers(): ReturnType<GasFunctions['getMembers']> {

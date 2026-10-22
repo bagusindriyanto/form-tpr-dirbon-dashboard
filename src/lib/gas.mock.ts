@@ -1,10 +1,10 @@
-import { createMachine } from '@/mocks/machine';
+import { createLine } from '@/mocks/line';
 import { createOperator } from '@/mocks/operator';
 import { createLeader } from '@/mocks/leader';
 import type { GasFunctions, Leader, Operator } from '../../shared/contracts';
 
 export const gasMock: GasFunctions = {
-  getMachines: () => Array.from({ length: 10 }).map(createMachine),
+  getLines: () => [createLine('TPR', 20), createLine('Dirbon', 5)],
   getMembers: () => {
     const leaders: Leader[] = [];
     const operators: Operator[] = [];

@@ -1,6 +1,7 @@
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
 import {
   Field,
   FieldDescription,
@@ -8,16 +9,17 @@ import {
   FieldGroup,
   FieldLabel,
 } from '@/components/ui/field';
-import OperatorCombobox from './OperatorCombobox';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import { useAddTarget } from '@/api/addTarget';
-import type { TargetFormData } from '../../shared/contracts';
 import { DialogFooter } from '@/components/ui/dialog';
+import type { TargetFormData } from '../../shared/contracts';
+import { useAddTarget } from '@/api/addTarget';
+import LineCombobox from './LineCombobox';
 import LeaderCombobox from './LeaderCombobox';
+import OperatorCombobox from './OperatorCombobox';
 
 const formSchema = z.object({
-  leader: z.string().min(1, 'Pilih minimal satu leader'),
+  line: z.string().min(1, 'Pilih satu meja'),
+  leader: z.string().min(1, 'Pilih satu leader'),
   operators: z
     .array(z.string())
     .min(1, 'Pilih minimal satu operator')
@@ -31,10 +33,11 @@ export default function TargetForm() {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { leader: '', operators: [] },
+    defaultValues: { line: '', leader: '', operators: [] },
   });
 
   function onSubmit(values: FormValues) {
+    console.log(values);
     toast.promise(mutateAsync(values), {
       loading: 'Menyimpan...',
       success: 'Data berhasil disimpan!',
@@ -47,6 +50,27 @@ export default function TargetForm() {
       <form id="output-form" onSubmit={form.handleSubmit(onSubmit)}>
         <div className="overflow-y-auto max-h-[70vh] -mx-4 px-4">
           <FieldGroup>
+            <Controller
+              name="line"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="form-line">Pilih meja</FieldLabel>
+                  <LineCombobox
+                    id="form-line"
+                    ref={field.ref}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    onBlur={field.onBlur}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+
             <Controller
               name="leader"
               control={form.control}
