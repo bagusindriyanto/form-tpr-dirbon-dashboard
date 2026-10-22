@@ -11,8 +11,8 @@ import {
 import OperatorCombobox from './OperatorCombobox';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { useAddOutput } from '@/api/addOutput';
-import type { OutputFormData } from '../../shared/contracts';
+import { useAddTarget } from '@/api/addTarget';
+import type { TargetFormData } from '../../shared/contracts';
 import { DialogFooter } from '@/components/ui/dialog';
 import LeaderCombobox from './LeaderCombobox';
 
@@ -22,12 +22,12 @@ const formSchema = z.object({
     .array(z.string())
     .min(1, 'Pilih minimal satu operator')
     .max(5, 'Maksimal lima operator'),
-}) satisfies z.ZodType<OutputFormData>;
+}) satisfies z.ZodType<TargetFormData>;
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function OutputForm() {
-  const { mutateAsync, isPending } = useAddOutput();
+export default function TargetForm() {
+  const { mutateAsync, isPending } = useAddTarget();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

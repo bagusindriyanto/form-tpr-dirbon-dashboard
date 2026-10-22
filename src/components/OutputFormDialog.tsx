@@ -1,14 +1,12 @@
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { SquarePlusIcon } from 'lucide-react';
-import OutputForm from './OutputForm';
 
 export default function OutputFormDialog() {
   return (
@@ -24,9 +22,7 @@ export default function OutputFormDialog() {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Form Update Output</DialogTitle>
-          <DialogDescription>Masukkan data operator.</DialogDescription>
         </DialogHeader>
-        <OutputForm />
       </DialogContent>
     </Dialog>
   );

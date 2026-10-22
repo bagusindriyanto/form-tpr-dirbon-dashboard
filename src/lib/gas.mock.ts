@@ -19,5 +19,5 @@ export const gasMock: GasFunctions = {
 
     return { leaders, operators };
   },
-  addOutput: (formData) => console.log(formData),
+  addTarget: (formData) => console.log(formData),
 };

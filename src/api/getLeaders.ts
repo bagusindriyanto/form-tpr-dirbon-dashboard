@@ -5,6 +5,7 @@ export const useGetLeaders = () => {
   return useQuery({
     queryKey: ['leaders'],
     queryFn: () => runGas('getMembers'),
-    select: (data) => data.leaders,
+    select: (data) =>
+      [...data.leaders].sort((a, b) => a.name.localeCompare(b.name)),
   });
 };

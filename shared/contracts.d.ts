@@ -18,7 +18,7 @@ export type Operator = {
   job: string;
 };
 
-export type OutputFormData = {
+export type TargetFormData = {
   leader: Leader['nip'];
   operators: Operator['nip'][];
 };
@@ -26,5 +26,5 @@ export type OutputFormData = {
 export type GasFunctions = {
   getMachines: () => Machine[];
   getMembers: () => { leaders: Leader[]; operators: Operator[] };
-  addOutput: (formData: OutputFormData) => void;
+  addTarget: (formData: TargetFormData) => void;
 };
