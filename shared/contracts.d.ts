@@ -19,6 +19,13 @@ export type Operator = {
   job: string;
 };
 
+export type StyleGroup = Record<string, Style>;
+
+export type Style = {
+  style: string;
+  parts: Record<string, string>;
+};
+
 export type TargetFormData = {
   line: string;
   workingHour: number;
@@ -44,6 +51,7 @@ export type OutputFormData = {
 export type GasFunctions = {
   getLines: () => LineGroup[];
   getMembers: () => { leaders: Leader[]; operators: Operator[] };
+  getStyles: () => StyleGroup;
   addTarget: (formData: TargetFormData) => void;
   addOutput: (formData: OutputFormData) => void;
 };

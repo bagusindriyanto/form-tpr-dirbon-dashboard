@@ -9,4 +9,10 @@ const SPREADSHEET_CONFIG = {
       kanban: 'Kanban',
     },
   },
+  inputOutput: {
+    spreadsheetId: '1Z5k7RuMQa-zlJr8dk2eUQ5NlVlpkDJCtMAk5HPoJeJE',
+    sheetNames: {
+      spoAndPrc: 'Daftar SPOPRC',
+    },
+  },
 } as const satisfies Record<string, SpreadsheetConfig>;

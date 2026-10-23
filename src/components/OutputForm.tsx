@@ -1,4 +1,4 @@
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -23,6 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import FormCombobox from './FormCombobox';
+import { useGetStyles } from '@/api/getStyles';
 
 const formSchema = z.object({
   line: z.string().min(1, 'Pilih satu meja.'),
@@ -54,7 +56,8 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function OutputForm() {
-  const { mutateAsync, isPending } = useAddOutput();
+  const { data: styleGroup, isPending, isError } = useGetStyles();
+  const { mutateAsync, isPending: isMutationPending } = useAddOutput();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -72,6 +75,21 @@ export default function OutputForm() {
       reject: undefined,
     },
   });
+
+  const selectedSpo = useWatch({ control: form.control, name: 'spo' });
+  const selectedPrc = useWatch({ control: form.control, name: 'prc' });
+  const selectedStyle = selectedSpo
+    ? (styleGroup?.[selectedSpo]?.style ?? '')
+    : '';
+  const selectedPart =
+    selectedSpo && selectedPrc
+      ? (styleGroup?.[selectedSpo]?.parts?.[selectedPrc] ?? '')
+      : '';
+
+  const spoOptions = Object.keys(styleGroup ?? {}).sort();
+  const prcOptions = selectedSpo
+    ? Object.keys(styleGroup?.[selectedSpo]?.parts ?? {}).sort()
+    : [];
 
   function onSubmit(values: FormValues) {
     toast.promise(mutateAsync(values), {
@@ -118,7 +136,7 @@ export default function OutputForm() {
                   <FieldLabel htmlFor="form-type">Tipe</FieldLabel>
                   <Select
                     name={field.name}
-                    value={field.value}
+                    value={field.value ?? null}
                     onValueChange={field.onChange}
                   >
                     <SelectTrigger
@@ -142,80 +160,85 @@ export default function OutputForm() {
               )}
             />
 
-            <Controller
-              name="spo"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-spo">SPO</FieldLabel>
-                  <Input
-                    {...field}
-                    id="form-spo"
-                    aria-invalid={fieldState.invalid}
-                    autoComplete="off"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="style"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-style">Style</FieldLabel>
-                  <Input
-                    {...field}
-                    id="form-style"
-                    aria-invalid={fieldState.invalid}
-                    autoComplete="off"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="prc"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-prc">PRC</FieldLabel>
-                  <Select
-                    name={field.name}
-                    value={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger
-                      id="form-prc"
+            <div className="grid grid-cols-[1fr_2fr] gap-2">
+              <Controller
+                name="spo"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-spo">SPO</FieldLabel>
+                    <FormCombobox
+                      id="form-spo"
+                      placeholder="Pilih SPO"
+                      items={spoOptions}
+                      name={field.name}
+                      value={field.value}
                       aria-invalid={fieldState.invalid}
-                    >
-                      <SelectValue placeholder="Pilih PRC" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>PRC</SelectLabel>
-                        <SelectItem value="PRC01">PRC01</SelectItem>
-                        <SelectItem value="PRC02">PRC02</SelectItem>
-                        <SelectItem value="PRC03">PRC03</SelectItem>
-                        <SelectItem value="PRC04">PRC04</SelectItem>
-                        <SelectItem value="PRC05">PRC05</SelectItem>
-                        <SelectItem value="PRC06">PRC06</SelectItem>
-                        <SelectItem value="PRC07">PRC07</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
+                      onValueChange={(spo) => {
+                        field.onChange(spo);
+                        form.setValue('prc', '', {
+                          shouldDirty: true,
+                        });
+                      }}
+                      isPending={isPending}
+                      isError={isError}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Field>
+                <FieldLabel htmlFor="form-style">Style</FieldLabel>
+                <Input
+                  id="form-style"
+                  value={selectedStyle}
+                  readOnly
+                  placeholder="Style terisi otomatis"
+                  disabled
+                />
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-[1fr_2fr] gap-2">
+              <Controller
+                name="prc"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-prc">PRC</FieldLabel>
+                    <FormCombobox
+                      id="form-prc"
+                      placeholder="Pilih PRC"
+                      items={prcOptions}
+                      name={field.name}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      aria-invalid={fieldState.invalid}
+                      disabled={!selectedSpo || prcOptions.length === 0}
+                      isPending={isPending}
+                      isError={isError}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Field>
+                <FieldLabel htmlFor="form-part">Part</FieldLabel>
+                <Input
+                  id="form-part"
+                  value={selectedPart}
+                  readOnly
+                  placeholder="Part terisi otomatis"
+                  disabled
+                />
+              </Field>
+            </div>
 
             <Controller
               name="size"
@@ -244,7 +267,7 @@ export default function OutputForm() {
                   <FieldLabel htmlFor="form-shift">Shift</FieldLabel>
                   <Select
                     name={field.name}
-                    value={field.value}
+                    value={field.value ?? null}
                     onValueChange={field.onChange}
                   >
                     <SelectTrigger
@@ -398,11 +421,16 @@ export default function OutputForm() {
       </form>
 
       <DialogFooter>
-        <Button type="button" variant="outline" onClick={() => form.reset()}>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={isMutationPending}
+          onClick={() => form.reset()}
+        >
           Reset
         </Button>
-        <Button type="submit" disabled={isPending} form="output-form">
-          {isPending ? 'Menyimpan...' : 'Simpan'}
+        <Button type="submit" disabled={isMutationPending} form="output-form">
+          {isMutationPending ? 'Menyimpan...' : 'Simpan'}
         </Button>
       </DialogFooter>
     </>

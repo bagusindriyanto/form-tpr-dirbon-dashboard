@@ -46,3 +46,45 @@ function getMembers(): ReturnType<GasFunctions['getMembers']> {
 
   return { leaders, operators };
 }
+
+function getStylesFromSheet(): StyleGroup {
+  const { inputOutput } = SPREADSHEET_CONFIG;
+
+  const spreadsheet = SpreadsheetApp.openById(inputOutput.spreadsheetId);
+  const sheet = spreadsheet.getSheetByName(inputOutput.sheetNames.spoAndPrc);
+  if (!sheet)
+    throw new Error(
+      `Sheet '${inputOutput.sheetNames.spoAndPrc}' tidak ditemukan`,
+    );
+
+  const data: CellValue[][] = sheet
+    .getRange(3, 3, sheet.getLastRow() - 2, 4)
+    .getValues();
+
+  const index: StyleGroup = Object.create(null);
+
+  for (const row of data) {
+    const spo = toString(row[0]);
+    const style = toString(row[1]);
+    const prc = toString(row[2]).toUpperCase();
+    const part = toString(row[3]);
+
+    if (!spo) continue;
+
+    if (!index[spo]) {
+      index[spo] = { style, parts: Object.create(null) };
+    }
+
+    const styleParts = index[spo].parts;
+
+    if (prc && /^PRC\d{2}$/.test(prc) && !styleParts[prc]) {
+      styleParts[prc] = part;
+    }
+  }
+
+  return index;
+}
+
+function getStyles(): ReturnType<GasFunctions['getStyles']> {
+  return getOrSetCache('styles', getStylesFromSheet, { ttl: 3600 });
+}

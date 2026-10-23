@@ -199,7 +199,12 @@ export default function TargetForm() {
       </form>
 
       <DialogFooter>
-        <Button type="button" variant="outline" onClick={() => form.reset()}>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={isPending}
+          onClick={() => form.reset()}
+        >
           Reset
         </Button>
         <Button type="submit" disabled={isPending} form="target-form">
