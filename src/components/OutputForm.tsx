@@ -209,6 +209,9 @@ export default function OutputForm() {
                         form.setValue('prc', '', {
                           shouldDirty: true,
                         });
+                        form.setValue('size', '', {
+                          shouldDirty: true,
+                        });
                       }}
                       isPending={isStylesPending}
                       isError={isStylesError}
@@ -320,7 +323,11 @@ export default function OutputForm() {
                       }
                       className="uppercase placeholder:normal-case"
                       aria-invalid={fieldState.invalid}
-                      placeholder="Ketik size secara manual"
+                      placeholder={
+                        !selectedSpo
+                          ? 'Pilih SPO terlebih dahulu'
+                          : 'Ketik size secara manual'
+                      }
                       disabled={!selectedSpo}
                     />
                   ) : (

@@ -55,7 +55,7 @@ export default function LeaderCombobox({
       <ComboboxInput
         {...inputProps}
         showClear
-        placeholder="Cari nama, NIP, job, atau section..."
+        placeholder="Cari nama, NIP, job, atau section"
       />
       <ComboboxContent>
         <ComboboxEmpty>

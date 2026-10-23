@@ -106,9 +106,6 @@ export default function TargetForm() {
                     placeholder="Contoh: 8"
                     autoComplete="off"
                   />
-                  <FieldDescription>
-                    Lama jam kerja dalam satu hari (1–12 jam).
-                  </FieldDescription>
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
@@ -187,7 +184,6 @@ export default function TargetForm() {
                     placeholder="Contoh: 100"
                     autoComplete="off"
                   />
-                  <FieldDescription>Target komitmen.</FieldDescription>
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}

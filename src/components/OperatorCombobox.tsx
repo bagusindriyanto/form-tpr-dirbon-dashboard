@@ -83,7 +83,7 @@ export default function OperatorCombobox({
                 placeholder={
                   operators.length
                     ? undefined
-                    : 'Cari nama, NIP, job, atau section...'
+                    : 'Cari nama, NIP, job, atau section'
                 }
               />
             </Fragment>

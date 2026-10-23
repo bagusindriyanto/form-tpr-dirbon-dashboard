@@ -37,11 +37,7 @@ export default function LineCombobox({
       value={value || null}
       onValueChange={(line) => onValueChange(line ?? '')}
     >
-      <ComboboxInput
-        {...inputProps}
-        showClear
-        placeholder="Cari nama meja..."
-      />
+      <ComboboxInput {...inputProps} showClear placeholder="Cari nama meja" />
       <ComboboxContent>
         <ComboboxEmpty>
           {isPending ? (
