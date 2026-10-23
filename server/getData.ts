@@ -48,14 +48,14 @@ function getMembers(): ReturnType<GasFunctions['getMembers']> {
 }
 
 function getStylesFromSheet(): StyleGroup {
-  const { inputOutput } = SPREADSHEET_CONFIG;
+  const {
+    inputOutput: { spreadsheetId, sheetNames },
+  } = SPREADSHEET_CONFIG;
 
-  const spreadsheet = SpreadsheetApp.openById(inputOutput.spreadsheetId);
-  const sheet = spreadsheet.getSheetByName(inputOutput.sheetNames.spoAndPrc);
+  const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+  const sheet = spreadsheet.getSheetByName(sheetNames.spoAndPrc);
   if (!sheet)
-    throw new Error(
-      `Sheet '${inputOutput.sheetNames.spoAndPrc}' tidak ditemukan`,
-    );
+    throw new Error(`Sheet '${sheetNames.spoAndPrc}' tidak ditemukan`);
 
   const data: CellValue[][] = sheet
     .getRange(3, 3, sheet.getLastRow() - 2, 4)
@@ -90,12 +90,14 @@ function getStyles(): ReturnType<GasFunctions['getStyles']> {
 }
 
 function getSizesFromSheet(): SizeGroup {
-  const { chk10 } = SPREADSHEET_CONFIG;
+  const {
+    chk10: { spreadsheetId, sheetNames },
+  } = SPREADSHEET_CONFIG;
 
-  const spreadsheet = SpreadsheetApp.openById(chk10.spreadsheetId);
-  const sheet = spreadsheet.getSheetByName(chk10.sheetNames.spoAndSize);
+  const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+  const sheet = spreadsheet.getSheetByName(sheetNames.spoAndSize);
   if (!sheet)
-    throw new Error(`Sheet '${chk10.sheetNames.spoAndSize}' tidak ditemukan`);
+    throw new Error(`Sheet '${sheetNames.spoAndSize}' tidak ditemukan`);
 
   const [, ...data]: CellValue[][] = sheet.getDataRange().getValues();
 

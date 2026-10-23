@@ -51,6 +51,12 @@ export type OutputFormData = {
   reject?: number;
 };
 
+export type ProblemFormData = {
+  line: string;
+  problem: string;
+  pic: 'MT' | 'Produksi' | 'QC' | 'Trainer';
+};
+
 export type GasFunctions = {
   getLines: () => LineGroup[];
   getMembers: () => { leaders: Leader[]; operators: Operator[] };
@@ -58,4 +64,5 @@ export type GasFunctions = {
   getSizes: () => SizeGroup;
   addTarget: (formData: TargetFormData) => void;
   addOutput: (formData: OutputFormData) => void;
+  addProblem: (formData: ProblemFormData) => void;
 };

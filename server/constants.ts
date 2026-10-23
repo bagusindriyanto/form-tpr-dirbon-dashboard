@@ -6,7 +6,6 @@ const SPREADSHEET_CONFIG = {
       member: 'Operator',
       target: 'Target',
       output: 'Output',
-      kanban: 'Kanban',
     },
   },
   inputOutput: {
@@ -19,6 +18,12 @@ const SPREADSHEET_CONFIG = {
     spreadsheetId: '1e7SrnbLRkfS5cMu3XoCrvb1yTzhI17onhQXknhw-e_0',
     sheetNames: {
       spoAndSize: 'SPO dan Size',
+    },
+  },
+  tprDirbon: {
+    spreadsheetId: '1ky7rSxy20KQJ3zcZw0mVY4qE48G6CKAjAbb3zybEmKk',
+    sheetNames: {
+      kanban: 'Kanban',
     },
   },
 } as const satisfies Record<string, SpreadsheetConfig>;

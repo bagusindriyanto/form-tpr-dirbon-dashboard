@@ -29,7 +29,6 @@ function addOutput(formData: OutputFormData) {
   const sheet = spreadsheet.getSheetByName(sheetNames.output);
   if (!sheet) throw new Error(`Sheet '${sheetNames.output}' tidak ditemukan`);
 
-  const lastRow = sheet.getLastRow();
   const createdAt = new Date();
   const {
     line,
@@ -46,9 +45,12 @@ function addOutput(formData: OutputFormData) {
     reject,
   } = formData;
 
+  const lastRow = sheet.getLastRow();
+  const nextRow = lastRow + 1;
+
   sheet.appendRow([
     createdAt,
-    `=A${lastRow + 1}`,
+    `=A${nextRow}`,
     line,
     shift,
     type,
@@ -62,5 +64,33 @@ function addOutput(formData: OutputFormData) {
     actual,
     repair ?? 0,
     reject ?? 0,
+  ]);
+}
+
+function addProblem(formData: ProblemFormData) {
+  const {
+    tprDirbon: { spreadsheetId, sheetNames },
+  } = SPREADSHEET_CONFIG;
+  const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+  const sheet = spreadsheet.getSheetByName(sheetNames.kanban);
+  if (!sheet) throw new Error(`Sheet '${sheetNames.kanban}' tidak ditemukan`);
+
+  const createdAt = new Date();
+  const { line, problem, pic } = formData;
+
+  const lastRow = sheet.getLastRow();
+  const nextRow = lastRow + 1;
+
+  sheet.appendRow([
+    createdAt,
+    line,
+    problem,
+    pic,
+    null,
+    null,
+    `=TEXT(DATEVALUE(A${nextRow}), "yyyy-mm-dd")`,
+    `=ROW()-1`,
+    `=ISOWEEKNUM(G${nextRow})`,
+    `=IFS(LEFT(B${nextRow},1)="D", "Dirbon", LEFT(B${nextRow},1)="T", "TPR")`,
   ]);
 }

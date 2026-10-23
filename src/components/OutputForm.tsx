@@ -327,8 +327,8 @@ export default function OutputForm() {
                   </FieldLabel>
                   {sizeOptions.length === 0 ? (
                     <Input
-                      id={`${formId}-${field.name}`}
                       {...field}
+                      id={`${formId}-${field.name}`}
                       value={field.value}
                       onChange={(event) =>
                         field.onChange(event.target.value.toUpperCase())

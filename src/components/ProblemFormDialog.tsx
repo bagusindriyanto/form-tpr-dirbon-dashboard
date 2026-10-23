@@ -7,6 +7,7 @@ import {
 } from './ui/dialog';
 import { Button } from './ui/button';
 import { SquarePenIcon } from 'lucide-react';
+import ProblemForm from './ProblemForm';
 
 export default function ProblemFormDialog() {
   return (
@@ -23,6 +24,7 @@ export default function ProblemFormDialog() {
         <DialogHeader>
           <DialogTitle>Form Tambah Problem</DialogTitle>
         </DialogHeader>
+        <ProblemForm />
       </DialogContent>
     </Dialog>
   );

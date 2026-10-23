@@ -39,4 +39,12 @@ export const gasMock: GasFunctions = {
       }, 2000);
     });
   },
+  addProblem: (formData) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        console.log(formData);
+        resolve(true);
+      }, 2000);
+    });
+  },
 };
