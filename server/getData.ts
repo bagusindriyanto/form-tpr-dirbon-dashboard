@@ -86,5 +86,42 @@ function getStylesFromSheet(): StyleGroup {
 }
 
 function getStyles(): ReturnType<GasFunctions['getStyles']> {
-  return getOrSetCache('styles', getStylesFromSheet, { ttl: 3600 });
+  return getOrSetCache('styles', getStylesFromSheet, { ttl: 6 * 60 * 60 });
+}
+
+function getSizesFromSheet(): SizeGroup {
+  const { chk10 } = SPREADSHEET_CONFIG;
+
+  const spreadsheet = SpreadsheetApp.openById(chk10.spreadsheetId);
+  const sheet = spreadsheet.getSheetByName(chk10.sheetNames.spoAndSize);
+  if (!sheet)
+    throw new Error(`Sheet '${chk10.sheetNames.spoAndSize}' tidak ditemukan`);
+
+  const [, ...data]: CellValue[][] = sheet.getDataRange().getValues();
+
+  const index: SizeGroup = Object.create(null);
+  const seen: Record<string, Set<string>> = Object.create(null);
+
+  for (const row of data) {
+    const spo = toString(row[0]);
+    const size = toString(row[2]);
+
+    if (!spo || !size) continue;
+
+    if (!index[spo]) {
+      index[spo] = [];
+      seen[spo] = new Set<string>();
+    }
+
+    if (seen[spo].has(size)) continue;
+
+    seen[spo].add(size);
+    index[spo].push(size);
+  }
+
+  return index;
+}
+
+function getSizes(): ReturnType<GasFunctions['getSizes']> {
+  return getOrSetCache('sizes', getSizesFromSheet, { ttl: 6 * 60 * 60 });
 }

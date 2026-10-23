@@ -2,6 +2,7 @@ import { createLine } from '@/mocks/line';
 import { createOperator } from '@/mocks/operator';
 import { createLeader } from '@/mocks/leader';
 import { createStyleGroup } from '@/mocks/style';
+import { createSizeGroup } from '@/mocks/size';
 import type { GasFunctions, Leader, Operator } from '../../shared/contracts';
 
 export const gasMock: GasFunctions = {
@@ -21,6 +22,7 @@ export const gasMock: GasFunctions = {
     return { leaders, operators };
   },
   getStyles: () => createStyleGroup(),
+  getSizes: () => createSizeGroup(),
   addTarget: (formData) => console.log(formData),
   addOutput: (formData) => console.log(formData),
 };

@@ -38,6 +38,7 @@ function addOutput(formData: OutputFormData) {
     spo,
     style,
     prc,
+    part,
     size,
     hour,
     actual,
@@ -53,11 +54,13 @@ function addOutput(formData: OutputFormData) {
     type,
     spo,
     style,
+    null,
     prc,
+    part,
     size,
     hour,
     actual,
-    repair,
-    reject,
+    repair ?? 0,
+    reject ?? 0,
   ]);
 }

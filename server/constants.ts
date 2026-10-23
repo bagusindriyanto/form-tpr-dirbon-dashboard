@@ -15,4 +15,10 @@ const SPREADSHEET_CONFIG = {
       spoAndPrc: 'Daftar SPOPRC',
     },
   },
+  chk10: {
+    spreadsheetId: '1e7SrnbLRkfS5cMu3XoCrvb1yTzhI17onhQXknhw-e_0',
+    sheetNames: {
+      spoAndSize: 'SPO dan Size',
+    },
+  },
 } as const satisfies Record<string, SpreadsheetConfig>;

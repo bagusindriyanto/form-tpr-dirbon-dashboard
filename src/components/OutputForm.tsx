@@ -11,7 +11,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import type { OutputFormData } from '../../shared/contracts';
 import { useAddOutput } from '@/api/addOutput';
 import LineCombobox from './LineCombobox';
 import {
@@ -25,38 +24,52 @@ import {
 } from '@/components/ui/select';
 import FormCombobox from './FormCombobox';
 import { useGetStyles } from '@/api/getStyles';
+import { useGetSizes } from '@/api/getSizes';
 
 const formSchema = z.object({
   line: z.string().min(1, 'Pilih satu meja.'),
   shift: z.enum(['1', '2'], { error: 'Pilih salah satu shift.' }),
   type: z.enum(['SPO', 'GR'], { error: 'Pilih SPO atau GR.' }),
   spo: z.string().min(1, 'SPO wajib diisi.'),
-  style: z.string().min(1, 'Style wajib diisi.'),
   prc: z.string().min(1, 'PRC wajib diisi.'),
   size: z.string().min(1, 'Ukuran wajib diisi.'),
   hour: z
     .number({ error: 'Jam kerja wajib diisi.' })
     .int('Jam kerja harus bilangan bulat.')
-    .min(1, 'Minimal 1 jam.')
-    .max(12, 'Maksimal 12 jam.'),
+    .min(1, 'Jam kerja minimal 1 jam.')
+    .max(12, 'Jam kerja maksimal 12 jam.'),
   actual: z
     .number({ error: 'Qty aktual wajib diisi.' })
+    .nonnegative('Qty aktual tidak boleh negatif.')
     .int('Qty aktual harus bilangan bulat.')
     .min(1, 'Qty aktual minimal 1.'),
-  repair: z
-    .number({ error: 'Qty repair wajib diisi.' })
-    .int('Qty repair harus bilangan bulat.')
-    .min(1, 'Qty repair minimal 1.'),
-  reject: z
-    .number({ error: 'Qty reject wajib diisi.' })
-    .int('Qty reject harus bilangan bulat.')
-    .min(1, 'Qty reject minimal 1.'),
-}) satisfies z.ZodType<OutputFormData>;
+  repair: z.optional(
+    z
+      .number({ error: 'Qty repair tidak boleh negatif.' })
+      .nonnegative('Qty repair tidak boleh negatif.')
+      .int('Qty repair harus bilangan bulat.'),
+  ),
+  reject: z.optional(
+    z
+      .number({ error: 'Qty reject tidak boleh negatif.' })
+      .nonnegative('Qty reject tidak boleh negatif.')
+      .int('Qty reject harus bilangan bulat.'),
+  ),
+});
 
 type FormValues = z.infer<typeof formSchema>;
 
 export default function OutputForm() {
-  const { data: styleGroup, isPending, isError } = useGetStyles();
+  const {
+    data: styleGroup,
+    isPending: isStylesPending,
+    isError: isStylesError,
+  } = useGetStyles();
+  const {
+    data: sizeGroup,
+    isPending: isSizesPending,
+    isError: isSizesError,
+  } = useGetSizes();
   const { mutateAsync, isPending: isMutationPending } = useAddOutput();
 
   const form = useForm<FormValues>({
@@ -64,7 +77,6 @@ export default function OutputForm() {
     defaultValues: {
       line: '',
       spo: '',
-      style: '',
       prc: '',
       size: '',
       type: undefined,
@@ -90,9 +102,18 @@ export default function OutputForm() {
   const prcOptions = selectedSpo
     ? Object.keys(styleGroup?.[selectedSpo]?.parts ?? {}).sort()
     : [];
+  const sizeOptions = sizeGroup?.[selectedSpo] ?? [];
 
   function onSubmit(values: FormValues) {
-    toast.promise(mutateAsync(values), {
+    const style = styleGroup?.[selectedSpo]?.style;
+    const part = styleGroup?.[selectedSpo]?.parts?.[selectedPrc];
+
+    if (!style || !part) {
+      toast.error('Style atau Part untuk SPO ini tidak ditemukan.');
+      return;
+    }
+
+    toast.promise(mutateAsync({ ...values, style, part }), {
       loading: 'Menyimpan...',
       success: () => {
         form.reset();
@@ -180,8 +201,8 @@ export default function OutputForm() {
                           shouldDirty: true,
                         });
                       }}
-                      isPending={isPending}
-                      isError={isError}
+                      isPending={isStylesPending}
+                      isError={isStylesError}
                     />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -218,8 +239,8 @@ export default function OutputForm() {
                       onValueChange={field.onChange}
                       aria-invalid={fieldState.invalid}
                       disabled={!selectedSpo || prcOptions.length === 0}
-                      isPending={isPending}
-                      isError={isError}
+                      isPending={isStylesPending}
+                      isError={isStylesError}
                     />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -246,12 +267,31 @@ export default function OutputForm() {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="form-size">Size</FieldLabel>
-                  <Input
-                    {...field}
-                    id="form-size"
-                    aria-invalid={fieldState.invalid}
-                    autoComplete="off"
-                  />
+                  {sizeOptions.length === 0 ? (
+                    <Input
+                      id="form-size"
+                      {...field}
+                      value={field.value}
+                      onChange={field.onChange}
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Ketik size secara manual"
+                      disabled={!selectedSpo}
+                    />
+                  ) : (
+                    <FormCombobox
+                      id="form-size"
+                      placeholder="Contoh: S, M, L, XL"
+                      items={sizeOptions}
+                      name={field.name}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      aria-invalid={fieldState.invalid}
+                      disabled={!selectedSpo}
+                      isPending={isSizesPending}
+                      isError={isSizesError}
+                    />
+                  )}
+
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
@@ -360,7 +400,9 @@ export default function OutputForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-repair">Repair</FieldLabel>
+                  <FieldLabel htmlFor="form-repair">
+                    Repair (opsional)
+                  </FieldLabel>
                   <Input
                     {...field}
                     value={
@@ -374,7 +416,7 @@ export default function OutputForm() {
                     id="form-reject"
                     aria-invalid={fieldState.invalid}
                     type="number"
-                    min={1}
+                    min={0}
                     inputMode="numeric"
                     placeholder="Contoh: 100"
                     autoComplete="off"
@@ -391,7 +433,9 @@ export default function OutputForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-reject">Reject</FieldLabel>
+                  <FieldLabel htmlFor="form-reject">
+                    Reject (opsional)
+                  </FieldLabel>
                   <Input
                     {...field}
                     value={
@@ -405,7 +449,7 @@ export default function OutputForm() {
                     id="form-reject"
                     aria-invalid={fieldState.invalid}
                     type="number"
-                    min={1}
+                    min={0}
                     inputMode="numeric"
                     placeholder="Contoh: 100"
                     autoComplete="off"
