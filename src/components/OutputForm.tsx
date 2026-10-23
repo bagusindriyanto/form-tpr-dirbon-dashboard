@@ -33,6 +33,7 @@ import {
 } from './ui/input-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { InfoIcon } from 'lucide-react';
+import { useId } from 'react';
 
 const formSchema = z.object({
   line: z.string().min(1, 'Pilih satu meja.'),
@@ -69,6 +70,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function OutputForm() {
+  const formId = useId();
   const {
     data: styleGroup,
     isPending: isStylesPending,
@@ -134,7 +136,7 @@ export default function OutputForm() {
 
   return (
     <>
-      <form id="output-form" onSubmit={form.handleSubmit(onSubmit)}>
+      <form id={`${formId}-form`} onSubmit={form.handleSubmit(onSubmit)}>
         <div className="overflow-y-auto max-h-[70vh] -mx-4 px-4 pb-2">
           <FieldGroup>
             <Controller
@@ -142,9 +144,11 @@ export default function OutputForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-line">Meja</FieldLabel>
+                  <FieldLabel htmlFor={`${formId}-${field.name}`}>
+                    Meja
+                  </FieldLabel>
                   <LineCombobox
-                    id="form-line"
+                    id={`${formId}-${field.name}`}
                     ref={field.ref}
                     value={field.value}
                     onValueChange={field.onChange}
@@ -163,14 +167,16 @@ export default function OutputForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-type">Tipe</FieldLabel>
+                  <FieldLabel htmlFor={`${formId}-${field.name}`}>
+                    Tipe
+                  </FieldLabel>
                   <Select
                     name={field.name}
                     value={field.value ?? null}
                     onValueChange={field.onChange}
                   >
                     <SelectTrigger
-                      id="form-type"
+                      id={`${formId}-${field.name}`}
                       aria-invalid={fieldState.invalid}
                     >
                       <SelectValue placeholder="Pilih tipe" />
@@ -196,9 +202,11 @@ export default function OutputForm() {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="form-spo">SPO</FieldLabel>
+                    <FieldLabel htmlFor={`${formId}-${field.name}`}>
+                      SPO
+                    </FieldLabel>
                     <FormCombobox
-                      id="form-spo"
+                      id={`${formId}-${field.name}`}
                       placeholder="Pilih SPO"
                       items={spoOptions}
                       name={field.name}
@@ -224,10 +232,10 @@ export default function OutputForm() {
               />
 
               <Field>
-                <FieldLabel htmlFor="form-style">Style</FieldLabel>
+                <FieldLabel htmlFor={`${formId}-style`}>Style</FieldLabel>
                 <InputGroup>
                   <InputGroupInput
-                    id="form-style"
+                    id={`${formId}-style`}
                     value={selectedStyle}
                     readOnly
                     placeholder="Style terisi otomatis"
@@ -258,9 +266,11 @@ export default function OutputForm() {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="form-prc">PRC</FieldLabel>
+                    <FieldLabel htmlFor={`${formId}-${field.name}`}>
+                      PRC
+                    </FieldLabel>
                     <FormCombobox
-                      id="form-prc"
+                      id={`${formId}-${field.name}`}
                       placeholder="Pilih PRC"
                       items={prcOptions}
                       name={field.name}
@@ -279,10 +289,10 @@ export default function OutputForm() {
               />
 
               <Field>
-                <FieldLabel htmlFor="form-part">Part</FieldLabel>
+                <FieldLabel htmlFor={`${formId}-part`}>Part</FieldLabel>
                 <InputGroup>
                   <InputGroupInput
-                    id="form-part"
+                    id={`${formId}-part`}
                     value={selectedPart}
                     readOnly
                     placeholder="Part terisi otomatis"
@@ -312,10 +322,12 @@ export default function OutputForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-size">Size</FieldLabel>
+                  <FieldLabel htmlFor={`${formId}-${field.name}`}>
+                    Size
+                  </FieldLabel>
                   {sizeOptions.length === 0 ? (
                     <Input
-                      id="form-size"
+                      id={`${formId}-${field.name}`}
                       {...field}
                       value={field.value}
                       onChange={(event) =>
@@ -332,7 +344,7 @@ export default function OutputForm() {
                     />
                   ) : (
                     <FormCombobox
-                      id="form-size"
+                      id={`${formId}-${field.name}`}
                       placeholder="Contoh: S, M, L, XL"
                       items={sizeOptions}
                       name={field.name}
@@ -357,14 +369,16 @@ export default function OutputForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-shift">Shift</FieldLabel>
+                  <FieldLabel htmlFor={`${formId}-${field.name}`}>
+                    Shift
+                  </FieldLabel>
                   <Select
                     name={field.name}
                     value={field.value ?? null}
                     onValueChange={field.onChange}
                   >
                     <SelectTrigger
-                      id="form-shift"
+                      id={`${formId}-${field.name}`}
                       aria-invalid={fieldState.invalid}
                     >
                       <SelectValue placeholder="Pilih shift" />
@@ -389,18 +403,17 @@ export default function OutputForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-hour">Jam Ke-</FieldLabel>
+                  <FieldLabel htmlFor={`${formId}-${field.name}`}>
+                    Jam Ke-
+                  </FieldLabel>
                   <Input
                     {...field}
-                    value={
-                      field.value == null || Number.isNaN(field.value)
-                        ? ''
-                        : field.value
-                    }
-                    onChange={(event) =>
-                      field.onChange(event.target.valueAsNumber)
-                    }
-                    id="form-hour"
+                    value={field.value ?? ''}
+                    onChange={(event) => {
+                      const value = event.target.valueAsNumber;
+                      field.onChange(Number.isNaN(value) ? undefined : value);
+                    }}
+                    id={`${formId}-${field.name}`}
                     aria-invalid={fieldState.invalid}
                     type="number"
                     min={1}
@@ -422,18 +435,17 @@ export default function OutputForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-actual">Aktual</FieldLabel>
+                  <FieldLabel htmlFor={`${formId}-${field.name}`}>
+                    Aktual
+                  </FieldLabel>
                   <Input
                     {...field}
-                    value={
-                      field.value == null || Number.isNaN(field.value)
-                        ? ''
-                        : field.value
-                    }
-                    onChange={(event) =>
-                      field.onChange(event.target.valueAsNumber)
-                    }
-                    id="form-actual"
+                    value={field.value ?? ''}
+                    onChange={(event) => {
+                      const value = event.target.valueAsNumber;
+                      field.onChange(Number.isNaN(value) ? undefined : value);
+                    }}
+                    id={`${formId}-${field.name}`}
                     aria-invalid={fieldState.invalid}
                     type="number"
                     min={1}
@@ -453,7 +465,7 @@ export default function OutputForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-repair">
+                  <FieldLabel htmlFor={`${formId}-${field.name}`}>
                     Repair (opsional)
                   </FieldLabel>
                   <Input
@@ -463,7 +475,7 @@ export default function OutputForm() {
                       const value = event.target.valueAsNumber;
                       field.onChange(Number.isNaN(value) ? undefined : value);
                     }}
-                    id="form-repair"
+                    id={`${formId}-${field.name}`}
                     aria-invalid={fieldState.invalid}
                     type="number"
                     min={0}
@@ -484,7 +496,7 @@ export default function OutputForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-reject">
+                  <FieldLabel htmlFor={`${formId}-${field.name}`}>
                     Reject (opsional)
                   </FieldLabel>
                   <Input
@@ -494,7 +506,7 @@ export default function OutputForm() {
                       const value = event.target.valueAsNumber;
                       field.onChange(Number.isNaN(value) ? undefined : value);
                     }}
-                    id="form-reject"
+                    id={`${formId}-${field.name}`}
                     aria-invalid={fieldState.invalid}
                     type="number"
                     min={0}
@@ -520,9 +532,13 @@ export default function OutputForm() {
           disabled={isMutationPending}
           onClick={() => form.reset()}
         >
-          Reset
+          Reset Form
         </Button>
-        <Button type="submit" disabled={isMutationPending} form="output-form">
+        <Button
+          type="submit"
+          disabled={isMutationPending}
+          form={`${formId}-form`}
+        >
           {isMutationPending ? 'Menyimpan...' : 'Simpan'}
         </Button>
       </DialogFooter>

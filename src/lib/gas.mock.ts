@@ -23,6 +23,20 @@ export const gasMock: GasFunctions = {
   },
   getStyles: () => createStyleGroup(),
   getSizes: () => createSizeGroup(),
-  addTarget: (formData) => console.log(formData),
-  addOutput: (formData) => console.log(formData),
+  addTarget: (formData) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        console.log(formData);
+        resolve(true);
+      }, 2000);
+    });
+  },
+  addOutput: (formData) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        console.log(formData);
+        resolve(true);
+      }, 2000);
+    });
+  },
 };

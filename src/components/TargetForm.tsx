@@ -2,6 +2,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
+import type { TargetFormData } from '../../shared/contracts';
 import {
   Field,
   FieldDescription,
@@ -12,11 +13,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import type { TargetFormData } from '../../shared/contracts';
 import { useAddTarget } from '@/api/addTarget';
 import LineCombobox from './LineCombobox';
 import LeaderCombobox from './LeaderCombobox';
 import OperatorCombobox from './OperatorCombobox';
+import { useId } from 'react';
 
 const formSchema = z.object({
   line: z.string().min(1, 'Pilih satu meja.'),
@@ -36,6 +37,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function TargetForm() {
+  const formId = useId();
   const { mutateAsync, isPending } = useAddTarget();
 
   const form = useForm<FormValues>({
@@ -56,17 +58,19 @@ export default function TargetForm() {
 
   return (
     <>
-      <form id="target-form" onSubmit={form.handleSubmit(onSubmit)}>
-        <div className="overflow-y-auto max-h-[70vh] -mx-4 px-4">
+      <form id={`${formId}-form`} onSubmit={form.handleSubmit(onSubmit)}>
+        <div className="overflow-y-auto max-h-[70vh] -mx-4 px-4 pb-2">
           <FieldGroup>
             <Controller
               name="line"
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-line">Meja</FieldLabel>
+                  <FieldLabel htmlFor={`${formId}-${field.name}`}>
+                    Meja
+                  </FieldLabel>
                   <LineCombobox
-                    id="form-line"
+                    id={`${formId}-${field.name}`}
                     ref={field.ref}
                     value={field.value}
                     onValueChange={field.onChange}
@@ -85,18 +89,17 @@ export default function TargetForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-working-hour">Jam Kerja</FieldLabel>
+                  <FieldLabel htmlFor={`${formId}-${field.name}`}>
+                    Jam Kerja
+                  </FieldLabel>
                   <Input
                     {...field}
-                    value={
-                      field.value == null || Number.isNaN(field.value)
-                        ? ''
-                        : field.value
-                    }
-                    onChange={(event) =>
-                      field.onChange(event.target.valueAsNumber)
-                    }
-                    id="form-working-hour"
+                    value={field.value ?? ''}
+                    onChange={(event) => {
+                      const value = event.target.valueAsNumber;
+                      field.onChange(Number.isNaN(value) ? undefined : value);
+                    }}
+                    id={`${formId}-${field.name}`}
                     aria-invalid={fieldState.invalid}
                     type="number"
                     min={1}
@@ -118,9 +121,11 @@ export default function TargetForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-leader">Leader</FieldLabel>
+                  <FieldLabel htmlFor={`${formId}-${field.name}`}>
+                    Leader
+                  </FieldLabel>
                   <LeaderCombobox
-                    id="form-leader"
+                    id={`${formId}-${field.name}`}
                     ref={field.ref}
                     value={field.value}
                     onValueChange={field.onChange}
@@ -139,11 +144,11 @@ export default function TargetForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-operators">
+                  <FieldLabel htmlFor={`${formId}-${field.name}`}>
                     Operator ({field.value.length})
                   </FieldLabel>
                   <OperatorCombobox
-                    id="form-operators"
+                    id={`${formId}-${field.name}`}
                     ref={field.ref} // agar RHF bisa fokus ke field saat submit gagal
                     value={field.value}
                     onValueChange={field.onChange}
@@ -165,18 +170,17 @@ export default function TargetForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-target">Target</FieldLabel>
+                  <FieldLabel htmlFor={`${formId}-${field.name}`}>
+                    Target
+                  </FieldLabel>
                   <Input
                     {...field}
-                    value={
-                      field.value == null || Number.isNaN(field.value)
-                        ? ''
-                        : field.value
-                    }
-                    onChange={(event) =>
-                      field.onChange(event.target.valueAsNumber)
-                    }
-                    id="form-target"
+                    value={field.value ?? ''}
+                    onChange={(event) => {
+                      const value = event.target.valueAsNumber;
+                      field.onChange(Number.isNaN(value) ? undefined : value);
+                    }}
+                    id={`${formId}-${field.name}`}
                     aria-invalid={fieldState.invalid}
                     type="number"
                     min={1}
@@ -201,9 +205,9 @@ export default function TargetForm() {
           disabled={isPending}
           onClick={() => form.reset()}
         >
-          Reset
+          Reset Form
         </Button>
-        <Button type="submit" disabled={isPending} form="target-form">
+        <Button type="submit" disabled={isPending} form={`${formId}-form`}>
           {isPending ? 'Menyimpan...' : 'Simpan'}
         </Button>
       </DialogFooter>

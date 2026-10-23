@@ -1,7 +1,6 @@
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -24,9 +23,6 @@ export default function TargetFormDialog() {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Form Update Target</DialogTitle>
-          <DialogDescription>
-            Masukkan data leader, operator, jam kerja.
-          </DialogDescription>
         </DialogHeader>
         <TargetForm />
       </DialogContent>
