@@ -25,6 +25,14 @@ import {
 import FormCombobox from './FormCombobox';
 import { useGetStyles } from '@/api/getStyles';
 import { useGetSizes } from '@/api/getSizes';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from './ui/input-group';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { InfoIcon } from 'lucide-react';
 
 const formSchema = z.object({
   line: z.string().min(1, 'Pilih satu meja.'),
@@ -32,7 +40,10 @@ const formSchema = z.object({
   type: z.enum(['SPO', 'GR'], { error: 'Pilih SPO atau GR.' }),
   spo: z.string().min(1, 'SPO wajib diisi.'),
   prc: z.string().min(1, 'PRC wajib diisi.'),
-  size: z.string().min(1, 'Ukuran wajib diisi.'),
+  size: z
+    .string()
+    .min(1, 'Ukuran wajib diisi.')
+    .transform((value) => value.toUpperCase()),
   hour: z
     .number({ error: 'Jam kerja wajib diisi.' })
     .int('Jam kerja harus bilangan bulat.')
@@ -43,18 +54,16 @@ const formSchema = z.object({
     .nonnegative('Qty aktual tidak boleh negatif.')
     .int('Qty aktual harus bilangan bulat.')
     .min(1, 'Qty aktual minimal 1.'),
-  repair: z.optional(
-    z
-      .number({ error: 'Qty repair tidak boleh negatif.' })
-      .nonnegative('Qty repair tidak boleh negatif.')
-      .int('Qty repair harus bilangan bulat.'),
-  ),
-  reject: z.optional(
-    z
-      .number({ error: 'Qty reject tidak boleh negatif.' })
-      .nonnegative('Qty reject tidak boleh negatif.')
-      .int('Qty reject harus bilangan bulat.'),
-  ),
+  repair: z
+    .number({ error: 'Qty repair harus berupa angka.' })
+    .int('Qty repair harus bilangan bulat.')
+    .nonnegative('Qty repair tidak boleh negatif.')
+    .optional(),
+  reject: z
+    .number({ error: 'Qty reject harus berupa angka.' })
+    .int('Qty reject harus bilangan bulat.')
+    .nonnegative('Qty reject tidak boleh negatif.')
+    .optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -126,7 +135,7 @@ export default function OutputForm() {
   return (
     <>
       <form id="output-form" onSubmit={form.handleSubmit(onSubmit)}>
-        <div className="overflow-y-auto max-h-[70vh] -mx-4 px-4">
+        <div className="overflow-y-auto max-h-[70vh] -mx-4 px-4 pb-2">
           <FieldGroup>
             <Controller
               name="line"
@@ -213,13 +222,30 @@ export default function OutputForm() {
 
               <Field>
                 <FieldLabel htmlFor="form-style">Style</FieldLabel>
-                <Input
-                  id="form-style"
-                  value={selectedStyle}
-                  readOnly
-                  placeholder="Style terisi otomatis"
-                  disabled
-                />
+                <InputGroup>
+                  <InputGroupInput
+                    id="form-style"
+                    value={selectedStyle}
+                    readOnly
+                    placeholder="Style terisi otomatis"
+                    disabled
+                    className="truncate"
+                  />
+                  {selectedStyle && (
+                    <Tooltip>
+                      <TooltipTrigger
+                        render={<InputGroupAddon align="inline-end" />}
+                      >
+                        <InputGroupButton variant="secondary" size="icon-xs">
+                          <InfoIcon />
+                        </InputGroupButton>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{selectedStyle}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </InputGroup>
               </Field>
             </div>
 
@@ -251,13 +277,30 @@ export default function OutputForm() {
 
               <Field>
                 <FieldLabel htmlFor="form-part">Part</FieldLabel>
-                <Input
-                  id="form-part"
-                  value={selectedPart}
-                  readOnly
-                  placeholder="Part terisi otomatis"
-                  disabled
-                />
+                <InputGroup>
+                  <InputGroupInput
+                    id="form-part"
+                    value={selectedPart}
+                    readOnly
+                    placeholder="Part terisi otomatis"
+                    disabled
+                    className="truncate"
+                  />
+                  {selectedPart && (
+                    <Tooltip>
+                      <TooltipTrigger
+                        render={<InputGroupAddon align="inline-end" />}
+                      >
+                        <InputGroupButton variant="secondary" size="icon-xs">
+                          <InfoIcon />
+                        </InputGroupButton>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{selectedPart}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </InputGroup>
               </Field>
             </div>
 
@@ -272,7 +315,10 @@ export default function OutputForm() {
                       id="form-size"
                       {...field}
                       value={field.value}
-                      onChange={field.onChange}
+                      onChange={(event) =>
+                        field.onChange(event.target.value.toUpperCase())
+                      }
+                      className="uppercase placeholder:normal-case"
                       aria-invalid={fieldState.invalid}
                       placeholder="Ketik size secara manual"
                       disabled={!selectedSpo}
@@ -405,18 +451,16 @@ export default function OutputForm() {
                   </FieldLabel>
                   <Input
                     {...field}
-                    value={
-                      field.value == null || Number.isNaN(field.value)
-                        ? ''
-                        : field.value
-                    }
-                    onChange={(event) =>
-                      field.onChange(event.target.valueAsNumber)
-                    }
-                    id="form-reject"
+                    value={field.value ?? ''}
+                    onChange={(event) => {
+                      const value = event.target.valueAsNumber;
+                      field.onChange(Number.isNaN(value) ? undefined : value);
+                    }}
+                    id="form-repair"
                     aria-invalid={fieldState.invalid}
                     type="number"
                     min={0}
+                    step={1}
                     inputMode="numeric"
                     placeholder="Contoh: 100"
                     autoComplete="off"
@@ -438,18 +482,16 @@ export default function OutputForm() {
                   </FieldLabel>
                   <Input
                     {...field}
-                    value={
-                      field.value == null || Number.isNaN(field.value)
-                        ? ''
-                        : field.value
-                    }
-                    onChange={(event) =>
-                      field.onChange(event.target.valueAsNumber)
-                    }
+                    value={field.value ?? ''}
+                    onChange={(event) => {
+                      const value = event.target.valueAsNumber;
+                      field.onChange(Number.isNaN(value) ? undefined : value);
+                    }}
                     id="form-reject"
                     aria-invalid={fieldState.invalid}
                     type="number"
                     min={0}
+                    step={1}
                     inputMode="numeric"
                     placeholder="Contoh: 100"
                     autoComplete="off"

@@ -20,7 +20,7 @@ export default function OutputFormDialog() {
         <SquarePlusIcon />
         Update Output
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Form Update Output</DialogTitle>
         </DialogHeader>
