@@ -28,10 +28,23 @@ function toString(value: CellValue): string {
   return result.trim();
 }
 
-function formattedTimestamp(timestamp: string): string {
-  if (timestamp === '') {
-    return '-';
-  } else {
-    return timestamp;
+const DATE_TIME_FORMAT = 'dd/MM/yyyy HH:mm:ss';
+
+function toDateTimeString(value: CellValue): string {
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) {
+      throw new Error('Nilai tanggal tidak valid');
+    }
+    return Utilities.formatDate(
+      value,
+      Session.getScriptTimeZone(),
+      DATE_TIME_FORMAT,
+    );
   }
+
+  if (!value) {
+    return '';
+  }
+
+  return String(value).trim();
 }

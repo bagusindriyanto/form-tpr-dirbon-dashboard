@@ -63,13 +63,13 @@ function getStylesFromSheet(): StyleGroup {
 
   const index: StyleGroup = Object.create(null);
 
-  for (const row of data) {
+  data.forEach((row) => {
     const spo = toString(row[0]);
     const style = toString(row[1]);
     const prc = toString(row[2]).toUpperCase();
     const part = toString(row[3]);
 
-    if (!spo) continue;
+    if (!spo) return;
 
     if (!index[spo]) {
       index[spo] = { style, parts: Object.create(null) };
@@ -80,7 +80,7 @@ function getStylesFromSheet(): StyleGroup {
     if (prc && /^PRC\d{2}$/.test(prc) && !styleParts[prc]) {
       styleParts[prc] = part;
     }
-  }
+  });
 
   return index;
 }
@@ -104,26 +104,54 @@ function getSizesFromSheet(): SizeGroup {
   const index: SizeGroup = Object.create(null);
   const seen: Record<string, Set<string>> = Object.create(null);
 
-  for (const row of data) {
+  data.forEach((row) => {
     const spo = toString(row[0]);
     const size = toString(row[2]);
 
-    if (!spo || !size) continue;
+    if (!spo || !size) return;
 
     if (!index[spo]) {
       index[spo] = [];
       seen[spo] = new Set<string>();
     }
 
-    if (seen[spo].has(size)) continue;
+    if (seen[spo].has(size)) return;
 
     seen[spo].add(size);
     index[spo].push(size);
-  }
+  });
 
   return index;
 }
 
 function getSizes(): ReturnType<GasFunctions['getSizes']> {
   return getOrSetCache('sizes', getSizesFromSheet, { ttl: 6 * 60 * 60 });
+}
+
+function getProblems(): ReturnType<GasFunctions['getProblems']> {
+  const {
+    tprDirbon: { spreadsheetId, sheetNames },
+  } = SPREADSHEET_CONFIG;
+  const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+  const sheet = spreadsheet.getSheetByName(sheetNames.kanban);
+  if (!sheet) throw new Error(`Sheet '${sheetNames.kanban}' tidak ditemukan`);
+
+  const [, ...data]: CellValue[][] = sheet.getDataRange().getValues();
+  const problems: Problem[] = [];
+
+  data.forEach((row, index) => {
+    const timestamp = toDateTimeString(row[0]);
+    const line = toString(row[1]);
+    const problem = toString(row[2]);
+    const pic = toString(row[3]) as PIC;
+    const start = toDateTimeString(row[4]);
+    const finish = toDateTimeString(row[5]);
+    const rowNumber = index + 2;
+
+    if (!finish) {
+      problems.push({ timestamp, line, problem, pic, start, rowNumber });
+    }
+  });
+
+  return problems;
 }

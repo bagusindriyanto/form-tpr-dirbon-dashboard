@@ -7,14 +7,9 @@ import {
 } from './ui/dialog';
 import { Button } from './ui/button';
 import { ListTodoIcon } from 'lucide-react';
-import { toast } from 'sonner';
+import ProblemListTable from './ProblemListTable';
 
 export default function ProblemListDialog() {
-  const handleClick = () =>
-    toast.success('Event created', {
-      description: 'Sunday, December 3 at 9:00 AM',
-    });
-
   return (
     <Dialog>
       <DialogTrigger
@@ -25,13 +20,11 @@ export default function ProblemListDialog() {
         <ListTodoIcon />
         Proses/Finish Problem
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-5xl">
         <DialogHeader>
           <DialogTitle>Daftar Problem</DialogTitle>
         </DialogHeader>
-        <div>
-          <Button onClick={handleClick}>Tampilkan Toast!</Button>
-        </div>
+        <ProblemListTable />
       </DialogContent>
     </Dialog>
   );

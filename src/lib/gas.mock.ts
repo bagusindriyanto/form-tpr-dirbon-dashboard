@@ -3,6 +3,7 @@ import { createOperator } from '@/mocks/operator';
 import { createLeader } from '@/mocks/leader';
 import { createStyleGroup } from '@/mocks/style';
 import { createSizeGroup } from '@/mocks/size';
+import { createProblem } from '@/mocks/problem';
 import type { GasFunctions, Leader, Operator } from '../../shared/contracts';
 
 export const gasMock: GasFunctions = {
@@ -23,6 +24,10 @@ export const gasMock: GasFunctions = {
   },
   getStyles: () => createStyleGroup(),
   getSizes: () => createSizeGroup(),
+  getProblems: () =>
+    Array.from({ length: 20 }, (_, i) =>
+      createProblem(i + 2, i % 5 === 0 ? '' : undefined),
+    ),
   addTarget: (formData) => {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -43,6 +48,14 @@ export const gasMock: GasFunctions = {
     return new Promise((resolve) => {
       setTimeout(() => {
         console.log(formData);
+        resolve(true);
+      }, 2000);
+    });
+  },
+  updateProblem: ({ rowNumber, action }) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        console.log({ rowNumber, action });
         resolve(true);
       }, 2000);
     });

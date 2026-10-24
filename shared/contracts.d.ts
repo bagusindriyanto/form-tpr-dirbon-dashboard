@@ -19,6 +19,17 @@ export type Operator = {
   job: string;
 };
 
+export type PIC = 'MT' | 'Produksi' | 'QC' | 'Trainer';
+
+export type Problem = {
+  timestamp: string;
+  line: string;
+  problem: string;
+  pic: PIC;
+  start: string;
+  rowNumber: number;
+};
+
 export type StyleGroup = Record<string, Style>;
 
 export type SizeGroup = Record<string, string[]>;
@@ -54,7 +65,14 @@ export type OutputFormData = {
 export type ProblemFormData = {
   line: string;
   problem: string;
-  pic: 'MT' | 'Produksi' | 'QC' | 'Trainer';
+  pic: PIC;
+};
+
+export type ProblemAction = 'Start' | 'Finish';
+
+export type UpdateProblemData = {
+  rowNumber: number;
+  action: ProblemAction;
 };
 
 export type GasFunctions = {
@@ -62,7 +80,15 @@ export type GasFunctions = {
   getMembers: () => { leaders: Leader[]; operators: Operator[] };
   getStyles: () => StyleGroup;
   getSizes: () => SizeGroup;
+  getProblems: () => Problem[];
   addTarget: (formData: TargetFormData) => void;
   addOutput: (formData: OutputFormData) => void;
   addProblem: (formData: ProblemFormData) => void;
+  updateProblem: ({
+    rowNumber,
+    action,
+  }: {
+    rowNumber: number;
+    action: ProblemAction;
+  }) => void;
 };
