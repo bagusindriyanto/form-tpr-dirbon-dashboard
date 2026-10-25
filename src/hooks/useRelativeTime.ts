@@ -1,3 +1,5 @@
+'use no memo';
+
 import { useEffect, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { id } from 'date-fns/locale';
