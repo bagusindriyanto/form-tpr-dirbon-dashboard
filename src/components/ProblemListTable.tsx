@@ -2,7 +2,10 @@ import { toast } from 'sonner';
 import {
   CheckSquare2Icon,
   ClipboardCheckIcon,
+  ClockAlertIcon,
+  ClockFadingIcon,
   ClockIcon,
+  ListTodoIcon,
   PlayIcon,
   RefreshCwIcon,
   XCircleIcon,
@@ -30,49 +33,32 @@ import {
 import DowntimeBadge from './DowntimeBadge';
 import { Badge } from './ui/badge';
 import LastUpdated from './LastUpdated';
+import { cn } from '@/lib/utils';
 
 function SkeletonRow() {
   return (
-    <TableRow>
-      <TableCell>
-        <Skeleton className="h-4 flex-1" />
-      </TableCell>
-      <TableCell>
-        <Skeleton className="h-4 flex-1" />
-      </TableCell>
-      <TableCell>
-        <Skeleton className="h-4 flex-1" />
-      </TableCell>
-      <TableCell>
-        <Skeleton className="h-4 flex-1" />
-      </TableCell>
-      <TableCell>
-        <Skeleton className="h-4 flex-1" />
-      </TableCell>
-      <TableCell>
-        <Skeleton className="h-4 flex-1" />
-      </TableCell>
-      <TableCell className="space-x-1">
-        <Button size="sm" disabled>
-          <PlayIcon data-icon="inline-start" />
-          Start
-        </Button>
-        <Button size="sm" disabled className="bg-green-600 hover:bg-green-500">
-          <CheckSquare2Icon data-icon="inline-start" />
-          Finish
-        </Button>
-      </TableCell>
+    <TableRow className="hover:bg-transparent">
+      {Array.from({ length: 7 }).map((_, index) => (
+        <TableCell key={index}>
+          <Skeleton
+            className={cn('h-4 w-full max-w-28', index === 6 && 'max-w-full')}
+          />
+        </TableCell>
+      ))}
     </TableRow>
   );
 }
 
 function ErrorRow({ error }: { error: Error }) {
   return (
-    <TableRow>
+    <TableRow className="hover:bg-transparent">
       <TableCell colSpan={7}>
-        <Empty>
+        <Empty className="text-destructive">
           <EmptyHeader>
-            <EmptyMedia variant="icon">
+            <EmptyMedia
+              variant="icon"
+              className="bg-destructive/10 text-destructive"
+            >
               <XCircleIcon />
             </EmptyMedia>
             <EmptyTitle>Gagal memuat data</EmptyTitle>
@@ -86,7 +72,7 @@ function ErrorRow({ error }: { error: Error }) {
 
 function EmptyRow() {
   return (
-    <TableRow>
+    <TableRow className="hover:bg-transparent">
       <TableCell colSpan={7}>
         <Empty>
           <EmptyHeader>
@@ -104,9 +90,28 @@ function EmptyRow() {
   );
 }
 
+function StartStatus({ start }: { start: string }) {
+  if (start === '') {
+    return (
+      <Badge variant="destructive" className="opacity-70">
+        <ClockAlertIcon data-icon="inline-start" />
+        Belum diproses
+      </Badge>
+    );
+  }
+
+  return (
+    <Badge className="bg-amber-100 text-amber-800">
+      <ClockFadingIcon data-icon="inline-start" />
+      {start}
+    </Badge>
+  );
+}
+
 export default function ProblemListTable() {
   const {
     data: problems,
+    isPending,
     isFetching,
     error,
     dataUpdatedAt,
@@ -116,113 +121,155 @@ export default function ProblemListTable() {
 
   const handleProcess = ({ rowNumber, action }: UpdateProblemData) => {
     toast.promise(mutateAsync({ rowNumber, action }), {
-      loading: 'Memproses...',
-      success: 'Data berhasil diperbarui!',
-      error: 'Data gagal diperbarui!',
+      loading:
+        action === 'Start'
+          ? 'Memproses problem...'
+          : 'Menyelesaikan problem...',
+      success:
+        action === 'Start' ? 'Problem diproses!' : 'Problem diselesaikan!',
+      error:
+        action === 'Start'
+          ? 'Problem gagal diproses.'
+          : 'Problem gagal diselesaikan.',
     });
   };
 
   return (
-    <div className="max-h-[70vh]">
-      <div className="flex justify-between items-center">
-        <Badge variant="outline">
-          <ClockIcon data-icon="inline-start" />
-          <LastUpdated dataUpdatedAt={dataUpdatedAt} />
-        </Badge>
+    <div className="flex max-h-[70vh] flex-col gap-3">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary">
+            <ListTodoIcon data-icon="inline-start" />
+            {problems?.length ?? 0} problem
+          </Badge>
+          <Badge variant="outline" className="text-muted-foreground">
+            <ClockIcon data-icon="inline-start" />
+            {isPending ? (
+              'Memperbarui...'
+            ) : (
+              <LastUpdated dataUpdatedAt={dataUpdatedAt} />
+            )}
+          </Badge>
+        </div>
         <Button
           variant="outline"
+          size="sm"
           onClick={() => refetch()}
           disabled={isFetching}
         >
           <RefreshCwIcon
-            className={isFetching ? 'animate-spin' : ''}
+            className={cn(isFetching && 'animate-spin')}
             data-icon="inline-start"
           />
-          {isFetching ? 'Memperbarui...' : 'Refresh data'}
+          {isFetching ? 'Memperbarui...' : 'Refresh'}
         </Button>
       </div>
-      <Table className="text-sm">
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-9 text-right">ID</TableHead>
-            <TableHead className="w-40">Timestamp</TableHead>
-            <TableHead className="w-9">Line</TableHead>
-            <TableHead>Problem</TableHead>
-            <TableHead className="w-20">PIC</TableHead>
-            <TableHead className="w-42">Start</TableHead>
-            <TableHead className="w-41 text-center">Action</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {isFetching ? (
-            Array.from({ length: 10 }).map((_, index) => (
-              <SkeletonRow key={index} />
-            ))
-          ) : error ? (
-            <ErrorRow error={error} />
-          ) : problems && problems.length === 0 ? (
-            <EmptyRow />
-          ) : (
-            problems?.map((problem) => (
-              <TableRow key={problem.id}>
-                <TableCell className="tabular-nums text-right font-light">
-                  {problem.id}
-                </TableCell>
-                <TableCell className="tabular-nums font-light">
-                  {problem.timestamp}
-                </TableCell>
-                <TableCell className="tabular-nums font-semibold">
-                  {problem.line}
-                </TableCell>
-                <TableCell className="whitespace-pre-wrap">
-                  {problem.problem}
-                </TableCell>
-                <TableCell>
-                  <DowntimeBadge pic={problem.pic} />
-                </TableCell>
-                <TableCell className="tabular-nums font-light">
-                  {problem.start}
-                </TableCell>
-                <TableCell className="space-x-1">
-                  <Button
-                    size="sm"
-                    variant={problem.start === '' ? 'default' : 'outline'}
-                    onClick={() =>
-                      handleProcess({
-                        rowNumber: problem.rowNumber,
-                        action: 'Start',
-                      })
-                    }
-                    disabled={isMutationPending || problem.start !== ''}
-                  >
-                    <PlayIcon data-icon="inline-start" />
-                    Start
-                  </Button>
-                  <Button
-                    variant={problem.start === '' ? 'outline' : 'default'}
-                    size="sm"
-                    onClick={() =>
-                      handleProcess({
-                        rowNumber: problem.rowNumber,
-                        action: 'Finish',
-                      })
-                    }
-                    disabled={isMutationPending || problem.start === ''}
-                    className={
-                      problem.start === ''
-                        ? ''
-                        : 'bg-green-600 hover:bg-green-500'
-                    }
-                  >
-                    <CheckSquare2Icon data-icon="inline-start" />
-                    Finish
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+
+      {/* Table card */}
+      <div className="min-h-0 flex-1 overflow-y-auto rounded-xl border bg-background shadow-sm **:data-[slot=table-container]:overflow-visible">
+        <Table className="text-sm">
+          <TableHeader className="sticky top-0 z-10 bg-muted/75 backdrop-blur-sm [&_tr]:border-border/80">
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="w-12 text-right text-muted-foreground">
+                ID
+              </TableHead>
+              <TableHead className="w-40 text-muted-foreground">
+                Waktu Laporan
+              </TableHead>
+              <TableHead className="w-12 text-muted-foreground">Line</TableHead>
+              <TableHead className="text-muted-foreground">Problem</TableHead>
+              <TableHead className="w-24 text-muted-foreground">PIC</TableHead>
+              <TableHead className="w-44 text-muted-foreground">
+                Mulai Proses
+              </TableHead>
+              <TableHead className="w-44 text-center text-muted-foreground">
+                Aksi
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isPending ? (
+              Array.from({ length: 10 }).map((_, index) => (
+                <SkeletonRow key={index} />
+              ))
+            ) : error ? (
+              <ErrorRow error={error} />
+            ) : problems && problems.length === 0 ? (
+              <EmptyRow />
+            ) : (
+              problems?.map((problem) => (
+                <TableRow
+                  key={problem.id}
+                  className="group/row transition-colors hover:bg-muted/40"
+                >
+                  <TableCell className="text-right text-xs tabular-nums text-muted-foreground">
+                    {problem.id}
+                  </TableCell>
+                  <TableCell className="text-xs tabular-nums text-muted-foreground">
+                    {problem.timestamp}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className="tabular-nums font-semibold"
+                    >
+                      {problem.line}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="max-w-xs whitespace-pre-wrap font-medium">
+                    <span title={problem.problem}>{problem.problem}</span>
+                  </TableCell>
+                  <TableCell>
+                    <DowntimeBadge pic={problem.pic} />
+                  </TableCell>
+                  <TableCell>
+                    <StartStatus start={problem.start} />
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <div className="inline-flex items-center gap-1">
+                      <Button
+                        size="sm"
+                        variant={problem.start === '' ? 'default' : 'outline'}
+                        onClick={() =>
+                          handleProcess({
+                            rowNumber: problem.rowNumber,
+                            action: 'Start',
+                          })
+                        }
+                        disabled={isMutationPending || problem.start !== ''}
+                        className="font-semibold"
+                      >
+                        <PlayIcon data-icon="inline-start" />
+                        Proses
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={problem.start === '' ? 'outline' : 'default'}
+                        onClick={() =>
+                          handleProcess({
+                            rowNumber: problem.rowNumber,
+                            action: 'Finish',
+                          })
+                        }
+                        disabled={isMutationPending || problem.start === ''}
+                        className={cn(
+                          problem.start === ''
+                            ? 'font-semibold'
+                            : 'bg-emerald-600 text-white hover:bg-emerald-500',
+                        )}
+                      >
+                        <CheckSquare2Icon data-icon="inline-start" />
+                        Selesai
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

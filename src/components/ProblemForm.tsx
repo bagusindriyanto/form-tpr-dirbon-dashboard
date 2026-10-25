@@ -24,6 +24,12 @@ import {
 import { useId } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import type { ProblemFormData } from '@/types/problem';
+import {
+  BadgeCheckIcon,
+  PackageIcon,
+  UserCog2Icon,
+  WrenchIcon,
+} from 'lucide-react';
 
 const formSchema = z.object({
   line: z.string().min(1, 'Pilih satu meja.'),
@@ -132,10 +138,30 @@ export default function ProblemForm() {
                     <SelectContent>
                       <SelectGroup>
                         <SelectLabel>PIC</SelectLabel>
-                        <SelectItem value="Produksi">Produksi</SelectItem>
-                        <SelectItem value="MT">MT</SelectItem>
-                        <SelectItem value="Trainer">Trainer</SelectItem>
-                        <SelectItem value="QC">QC</SelectItem>
+                        <SelectItem value="Produksi">
+                          <span className="inline-flex gap-2 items-center">
+                            <PackageIcon />
+                            Produksi
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="MT">
+                          <span className="inline-flex gap-2 items-center">
+                            <WrenchIcon />
+                            MT
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="Trainer">
+                          <span className="inline-flex gap-2 items-center">
+                            <UserCog2Icon />
+                            Trainer
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="QC">
+                          <span className="inline-flex gap-2 items-center">
+                            <BadgeCheckIcon />
+                            QC
+                          </span>
+                        </SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>
