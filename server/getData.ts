@@ -146,10 +146,11 @@ function getProblems(): ReturnType<GasFunctions['getProblems']> {
     const pic = toString(row[3]) as PIC;
     const start = toDateTimeString(row[4]);
     const finish = toDateTimeString(row[5]);
+    const id = toNumber(row[7]);
     const rowNumber = index + 2;
 
     if (!finish) {
-      problems.push({ timestamp, line, problem, pic, start, rowNumber });
+      problems.push({ id, timestamp, line, problem, pic, start, rowNumber });
     }
   });
 

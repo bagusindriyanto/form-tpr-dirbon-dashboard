@@ -26,7 +26,7 @@ export const gasMock: GasFunctions = {
   getSizes: () => createSizeGroup(),
   getProblems: () =>
     Array.from({ length: 20 }, (_, i) =>
-      createProblem(i + 2, i % 5 === 0 ? '' : undefined),
+      createProblem(i + 1, i + 2, i % 5 === 0 ? '' : undefined),
     ),
   addTarget: (formData) => {
     return new Promise((resolve) => {

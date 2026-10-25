@@ -1,8 +1,7 @@
 import { fakerID_ID as faker } from '@faker-js/faker';
-import type { Problem } from '@/types/problem';
-import type { PIC } from '../../shared/contracts';
+import type { Problem, PIC } from '@/types/problem';
 
-const PICS: PIC[] = ['MT', 'Produksi', 'QC', 'Trainer'];
+const PICS: PIC[] = ['Produksi', 'MT', 'Trainer', 'QC'];
 
 const PROBLEMS = [
   'Mesin jahit macet',
@@ -33,6 +32,7 @@ function createLine(): string {
 }
 
 export const createProblem = (
+  id: number,
   rowNumber = faker.number.int({ min: 2, max: 100 }),
   start?: string,
 ): Problem => {
@@ -46,6 +46,7 @@ export const createProblem = (
     );
 
   return {
+    id,
     timestamp: formatDateTime(timestamp),
     line: createLine(),
     problem: faker.helpers.arrayElement(PROBLEMS),

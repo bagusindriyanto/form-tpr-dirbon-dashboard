@@ -21,7 +21,7 @@ const SPREADSHEET_CONFIG = {
     },
   },
   tprDirbon: {
-    spreadsheetId: '1ky7rSxy20KQJ3zcZw0mVY4qE48G6CKAjAbb3zybEmKk',
+    spreadsheetId: '1k2T6xSjR7pGUwDwwDzIP2McvCIfWXtdQFVGNpxTzN7o',
     sheetNames: {
       kanban: 'Kanban',
     },

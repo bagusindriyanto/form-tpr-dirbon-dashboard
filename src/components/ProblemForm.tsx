@@ -23,14 +23,15 @@ import {
 } from '@/components/ui/select';
 import { useId } from 'react';
 import { Textarea } from '@/components/ui/textarea';
+import type { ProblemFormData } from '@/types/problem';
 
 const formSchema = z.object({
   line: z.string().min(1, 'Pilih satu meja.'),
   problem: z.string().min(1, 'Problem wajib diisi.'),
-  pic: z.enum(['MT', 'Produksi', 'QC', 'Trainer'], {
+  pic: z.enum(['Produksi', 'MT', 'Trainer', 'QC'], {
     error: 'Pilih salah satu pic.',
   }),
-});
+}) satisfies z.ZodType<ProblemFormData>;
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -131,10 +132,10 @@ export default function ProblemForm() {
                     <SelectContent>
                       <SelectGroup>
                         <SelectLabel>PIC</SelectLabel>
-                        <SelectItem value="MT">MT</SelectItem>
                         <SelectItem value="Produksi">Produksi</SelectItem>
-                        <SelectItem value="QC">QC</SelectItem>
+                        <SelectItem value="MT">MT</SelectItem>
                         <SelectItem value="Trainer">Trainer</SelectItem>
+                        <SelectItem value="QC">QC</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>

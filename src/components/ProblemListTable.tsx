@@ -2,7 +2,9 @@ import { toast } from 'sonner';
 import {
   CheckSquare2Icon,
   ClipboardCheckIcon,
+  ClockIcon,
   PlayIcon,
+  RefreshCwIcon,
   XCircleIcon,
 } from 'lucide-react';
 import {
@@ -25,6 +27,9 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from './ui/empty';
+import DowntimeBadge from './DowntimeBadge';
+import { Badge } from './ui/badge';
+import LastUpdated from './LastUpdated';
 
 function SkeletonRow() {
   return (
@@ -48,11 +53,11 @@ function SkeletonRow() {
         <Skeleton className="h-4 flex-1" />
       </TableCell>
       <TableCell className="space-x-1">
-        <Button disabled size="sm">
+        <Button size="sm" disabled>
           <PlayIcon data-icon="inline-start" />
           Start
         </Button>
-        <Button variant="outline" size="sm" disabled>
+        <Button size="sm" disabled className="bg-green-600 hover:bg-green-500">
           <CheckSquare2Icon data-icon="inline-start" />
           Finish
         </Button>
@@ -100,7 +105,13 @@ function EmptyRow() {
 }
 
 export default function ProblemListTable() {
-  const { data: problems, isPending, error } = useGetProblems();
+  const {
+    data: problems,
+    isFetching,
+    error,
+    dataUpdatedAt,
+    refetch,
+  } = useGetProblems();
   const { mutateAsync, isPending: isMutationPending } = useUpdateProblem();
 
   const handleProcess = ({ rowNumber, action }: UpdateProblemData) => {
@@ -112,22 +123,39 @@ export default function ProblemListTable() {
   };
 
   return (
-    <div className="overflow-y-auto max-h-[70vh] -mx-4 px-4 pb-2">
+    <div className="max-h-[70vh]">
+      <div className="flex justify-between items-center">
+        <Badge variant="outline">
+          <ClockIcon data-icon="inline-start" />
+          <LastUpdated dataUpdatedAt={dataUpdatedAt} />
+        </Badge>
+        <Button
+          variant="outline"
+          onClick={() => refetch()}
+          disabled={isFetching}
+        >
+          <RefreshCwIcon
+            className={isFetching ? 'animate-spin' : ''}
+            data-icon="inline-start"
+          />
+          {isFetching ? 'Memperbarui...' : 'Refresh data'}
+        </Button>
+      </div>
       <Table className="text-sm">
         <TableHeader>
           <TableRow>
+            <TableHead className="w-9 text-right">ID</TableHead>
             <TableHead className="w-40">Timestamp</TableHead>
             <TableHead className="w-9">Line</TableHead>
-            <TableHead className="w-79">Problem</TableHead>
-            <TableHead className="w-18">PIC</TableHead>
-            <TableHead className="w-40">Start</TableHead>
-            <TableHead className="w-9">#</TableHead>
+            <TableHead>Problem</TableHead>
+            <TableHead className="w-20">PIC</TableHead>
+            <TableHead className="w-42">Start</TableHead>
             <TableHead className="w-41 text-center">Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {isPending ? (
-            Array.from({ length: 5 }).map((_, index) => (
+          {isFetching ? (
+            Array.from({ length: 10 }).map((_, index) => (
               <SkeletonRow key={index} />
             ))
           ) : error ? (
@@ -135,18 +163,26 @@ export default function ProblemListTable() {
           ) : problems && problems.length === 0 ? (
             <EmptyRow />
           ) : (
-            problems.map((problem) => (
-              <TableRow key={problem.rowNumber}>
-                <TableCell className="tabular-nums">
+            problems?.map((problem) => (
+              <TableRow key={problem.id}>
+                <TableCell className="tabular-nums text-right font-light">
+                  {problem.id}
+                </TableCell>
+                <TableCell className="tabular-nums font-light">
                   {problem.timestamp}
                 </TableCell>
-                <TableCell className="tabular-nums">{problem.line}</TableCell>
+                <TableCell className="tabular-nums font-semibold">
+                  {problem.line}
+                </TableCell>
                 <TableCell className="whitespace-pre-wrap">
                   {problem.problem}
                 </TableCell>
-                <TableCell>{problem.pic}</TableCell>
-                <TableCell className="tabular-nums">{problem.start}</TableCell>
-                <TableCell>{problem.rowNumber}</TableCell>
+                <TableCell>
+                  <DowntimeBadge pic={problem.pic} />
+                </TableCell>
+                <TableCell className="tabular-nums font-light">
+                  {problem.start}
+                </TableCell>
                 <TableCell className="space-x-1">
                   <Button
                     size="sm"
@@ -172,6 +208,11 @@ export default function ProblemListTable() {
                       })
                     }
                     disabled={isMutationPending || problem.start === ''}
+                    className={
+                      problem.start === ''
+                        ? ''
+                        : 'bg-green-600 hover:bg-green-500'
+                    }
                   >
                     <CheckSquare2Icon data-icon="inline-start" />
                     Finish

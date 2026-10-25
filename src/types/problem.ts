@@ -3,4 +3,5 @@ export type {
   ProblemAction,
   ProblemFormData,
   UpdateProblemData,
+  PIC,
 } from '../../shared/contracts';

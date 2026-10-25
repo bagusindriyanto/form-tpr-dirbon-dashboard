@@ -19,9 +19,10 @@ export type Operator = {
   job: string;
 };
 
-export type PIC = 'MT' | 'Produksi' | 'QC' | 'Trainer';
+export type PIC = 'Produksi' | 'MT' | 'Trainer' | 'QC';
 
 export type Problem = {
+  id: number;
   timestamp: string;
   line: string;
   problem: string;
