@@ -1,12 +1,15 @@
-import { Controller, useForm, useWatch } from 'react-hook-form';
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import {
   Field,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
+  FieldLegend,
+  FieldSet,
 } from '@/components/ui/field';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
@@ -32,7 +35,7 @@ import {
   InputGroupInput,
 } from './ui/input-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { InfoIcon } from 'lucide-react';
+import { InfoIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { useId } from 'react';
 
 const formSchema = z.object({
@@ -40,7 +43,31 @@ const formSchema = z.object({
   shift: z.enum(['1', '2'], { error: 'Pilih salah satu shift.' }),
   type: z.enum(['SPO', 'GR'], { error: 'Pilih SPO atau GR.' }),
   spo: z.string().min(1, 'SPO wajib diisi.'),
-  prc: z.string().min(1, 'PRC wajib diisi.'),
+  prcs: z
+    .array(
+      z.object({
+        prc: z.string().min(1, 'PRC wajib diisi.'),
+      }),
+    )
+    .min(1, 'Minimal satu PRC.')
+    .superRefine((items, ctx) => {
+      const seen = new Set<string>();
+
+      items.forEach(({ prc }, index) => {
+        if (!prc) return;
+
+        if (seen.has(prc)) {
+          ctx.addIssue({
+            code: 'custom',
+            path: [index, 'prc'],
+            message: 'PRC ini sudah dipilih.',
+          });
+          return;
+        }
+
+        seen.add(prc);
+      });
+    }),
   size: z
     .string()
     .min(1, 'Ukuran wajib diisi.')
@@ -69,6 +96,10 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+function comparePrc(a: string, b: string) {
+  return a.localeCompare(b, undefined, { numeric: true });
+}
+
 export default function OutputForm() {
   const formId = useId();
   const {
@@ -88,7 +119,7 @@ export default function OutputForm() {
     defaultValues: {
       line: '',
       spo: '',
-      prc: '',
+      prcs: [{ prc: '' }],
       size: '',
       type: undefined,
       shift: undefined,
@@ -99,39 +130,74 @@ export default function OutputForm() {
     },
   });
 
+  const { fields, append, remove, replace } = useFieldArray({
+    control: form.control,
+    name: 'prcs',
+  });
+
   const selectedSpo = useWatch({ control: form.control, name: 'spo' });
-  const selectedPrc = useWatch({ control: form.control, name: 'prc' });
+  const selectedPrcs = useWatch({ control: form.control, name: 'prcs' });
   const selectedStyle = selectedSpo
     ? (styleGroup?.[selectedSpo]?.style ?? '')
     : '';
-  const selectedPart =
-    selectedSpo && selectedPrc
-      ? (styleGroup?.[selectedSpo]?.parts?.[selectedPrc] ?? '')
-      : '';
 
   const spoOptions = Object.keys(styleGroup ?? {}).sort();
   const prcOptions = selectedSpo
-    ? Object.keys(styleGroup?.[selectedSpo]?.parts ?? {}).sort()
+    ? Object.keys(styleGroup?.[selectedSpo]?.parts ?? {}).sort(comparePrc)
     : [];
   const sizeOptions = sizeGroup?.[selectedSpo] ?? [];
+  const selectedPrcValues = new Set(
+    (selectedPrcs ?? []).map(({ prc }) => prc).filter(Boolean),
+  );
+
+  function getPart(prc: string) {
+    return selectedSpo && prc
+      ? (styleGroup?.[selectedSpo]?.parts?.[prc] ?? '')
+      : '';
+  }
 
   function onSubmit(values: FormValues) {
-    const style = styleGroup?.[selectedSpo]?.style;
-    const part = styleGroup?.[selectedSpo]?.parts?.[selectedPrc];
+    const style = styleGroup?.[values.spo]?.style;
+    const styleParts = styleGroup?.[values.spo]?.parts;
 
-    if (!style || !part) {
+    if (!style || !styleParts) {
       toast.error('Style atau Part untuk SPO ini tidak ditemukan.');
       return;
     }
 
-    toast.promise(mutateAsync({ ...values, style, part }), {
-      loading: 'Menyimpan...',
-      success: () => {
-        form.reset();
-        return 'Data berhasil disimpan!';
-      },
-      error: 'Data gagal disimpan!',
+    let hasMissingPart = false;
+
+    values.prcs.forEach(({ prc }, index) => {
+      if (styleParts[prc]) return;
+
+      hasMissingPart = true;
+      form.setError(`prcs.${index}.prc`, {
+        type: 'manual',
+        message: 'PRC ini tidak memiliki Part pada SPO tersebut.',
+      });
     });
+
+    if (hasMissingPart) return;
+
+    const { prcs, ...rest } = values;
+    const sortedPrcs = [...prcs].sort((a, b) => comparePrc(a.prc, b.prc));
+
+    toast.promise(
+      mutateAsync({
+        ...rest,
+        style,
+        prc: sortedPrcs.map(({ prc }) => prc).join(', '),
+        part: sortedPrcs.map(({ prc }) => styleParts[prc]).join(', '),
+      }),
+      {
+        loading: 'Menyimpan...',
+        success: () => {
+          form.reset();
+          return 'Data berhasil disimpan!';
+        },
+        error: 'Data gagal disimpan!',
+      },
+    );
   }
 
   return (
@@ -214,9 +280,8 @@ export default function OutputForm() {
                       aria-invalid={fieldState.invalid}
                       onValueChange={(spo) => {
                         field.onChange(spo);
-                        form.setValue('prc', '', {
-                          shouldDirty: true,
-                        });
+                        replace([{ prc: '' }]);
+                        form.clearErrors('prcs');
                         form.setValue('size', '', {
                           shouldDirty: true,
                         });
@@ -239,7 +304,6 @@ export default function OutputForm() {
                     value={selectedStyle}
                     readOnly
                     placeholder="Style terisi otomatis"
-                    disabled
                     className="truncate"
                   />
                   {selectedStyle && (
@@ -260,62 +324,122 @@ export default function OutputForm() {
               </Field>
             </div>
 
-            <div className="grid grid-cols-[1fr_2fr] gap-2">
-              <Controller
-                name="prc"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={`${formId}-${field.name}`}>
-                      PRC
-                    </FieldLabel>
-                    <FormCombobox
-                      id={`${formId}-${field.name}`}
-                      placeholder="Pilih PRC"
-                      items={prcOptions}
-                      name={field.name}
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      aria-invalid={fieldState.invalid}
-                      disabled={!selectedSpo || prcOptions.length === 0}
-                      isPending={isStylesPending}
-                      isError={isStylesError}
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
+            <FieldSet className="gap-3">
+              <FieldLegend variant="label">PRC</FieldLegend>
+              <FieldDescription>
+                Pilih satu atau lebih PRC. Part akan terisi otomatis.
+              </FieldDescription>
+              <FieldGroup className="gap-2">
+                {fields.map((item, index) => {
+                  const prc = selectedPrcs?.[index]?.prc ?? '';
+                  const part = getPart(prc);
+                  const rowPrcOptions = prcOptions.filter(
+                    (option) =>
+                      option === prc || !selectedPrcValues.has(option),
+                  );
 
-              <Field>
-                <FieldLabel htmlFor={`${formId}-part`}>Part</FieldLabel>
-                <InputGroup>
-                  <InputGroupInput
-                    id={`${formId}-part`}
-                    value={selectedPart}
-                    readOnly
-                    placeholder="Part terisi otomatis"
-                    disabled
-                    className="truncate"
-                  />
-                  {selectedPart && (
-                    <Tooltip>
-                      <TooltipTrigger
-                        render={<InputGroupAddon align="inline-end" />}
-                      >
-                        <InputGroupButton variant="secondary" size="icon-xs">
-                          <InfoIcon />
-                        </InputGroupButton>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{selectedPart}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                </InputGroup>
-              </Field>
-            </div>
+                  return (
+                    <div
+                      key={item.id}
+                      className="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] items-start gap-2"
+                    >
+                      <Controller
+                        name={`prcs.${index}.prc`}
+                        control={form.control}
+                        render={({ field, fieldState }) => (
+                          <Field data-invalid={fieldState.invalid}>
+                            <FieldLabel
+                              htmlFor={`${formId}-prc-${index}`}
+                              className="sr-only"
+                            >
+                              PRC {index + 1}
+                            </FieldLabel>
+                            <FormCombobox
+                              id={`${formId}-prc-${index}`}
+                              placeholder="Pilih PRC"
+                              items={rowPrcOptions}
+                              name={field.name}
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              aria-invalid={fieldState.invalid}
+                              disabled={!selectedSpo || prcOptions.length === 0}
+                              isPending={isStylesPending}
+                              isError={isStylesError}
+                            />
+                            {fieldState.invalid && (
+                              <FieldError errors={[fieldState.error]} />
+                            )}
+                          </Field>
+                        )}
+                      />
+
+                      <Field>
+                        <FieldLabel
+                          htmlFor={`${formId}-part-${index}`}
+                          className="sr-only"
+                        >
+                          Part {index + 1}
+                        </FieldLabel>
+                        <InputGroup>
+                          <InputGroupInput
+                            id={`${formId}-part-${index}`}
+                            value={part}
+                            readOnly
+                            placeholder="Part terisi otomatis"
+                            className="truncate"
+                          />
+                          {(part || fields.length > 1) && (
+                            <InputGroupAddon align="inline-end">
+                              {part && (
+                                <Tooltip>
+                                  <TooltipTrigger
+                                    render={
+                                      <InputGroupButton
+                                        type="button"
+                                        variant="secondary"
+                                        size="icon-xs"
+                                      >
+                                        <InfoIcon />
+                                      </InputGroupButton>
+                                    }
+                                  />
+                                  <TooltipContent>
+                                    <p>{part}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
+                              {fields.length > 1 && (
+                                <InputGroupButton
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon-xs"
+                                  onClick={() => remove(index)}
+                                  aria-label={`Hapus PRC ${index + 1}`}
+                                >
+                                  <Trash2Icon />
+                                </InputGroupButton>
+                              )}
+                            </InputGroupAddon>
+                          )}
+                        </InputGroup>
+                      </Field>
+                    </div>
+                  );
+                })}
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => append({ prc: '' })}
+                  disabled={!selectedSpo || fields.length >= prcOptions.length}
+                >
+                  <PlusIcon />
+                  Tambah PRC
+                </Button>
+              </FieldGroup>
+            </FieldSet>
 
             <Controller
               name="size"
