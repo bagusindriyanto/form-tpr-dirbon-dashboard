@@ -346,7 +346,7 @@ export default function OutputForm() {
                     <FormCombobox
                       id={`${formId}-${field.name}`}
                       placeholder="Contoh: S, M, L, XL"
-                      items={sizeOptions}
+                      items={[...sizeOptions, 'ALL SIZE']}
                       name={field.name}
                       value={field.value}
                       onValueChange={field.onChange}

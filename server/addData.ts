@@ -56,7 +56,7 @@ function addOutput(formData: OutputFormData) {
     type,
     spo,
     style,
-    null,
+    `=XLOOKUP(G${nextRow},'Database SPO'!$B$2:$B,'Database SPO'!$C$2:$C, XLOOKUP(F${nextRow},'Database SPO'!$A$2:$A,'Database SPO'!$C$2:$C, "NOT FOUND", 0), 0)`,
     prc,
     part,
     size,

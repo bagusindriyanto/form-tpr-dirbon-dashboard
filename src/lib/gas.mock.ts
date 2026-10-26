@@ -22,8 +22,8 @@ export const gasMock: GasFunctions = {
 
     return { leaders, operators };
   },
-  getStyles: () => createStyleGroup(),
-  getSizes: () => createSizeGroup(),
+  getStyles: () => createStyleGroup(7000),
+  getSizes: () => createSizeGroup(7000),
   getProblems: () =>
     Array.from({ length: 20 }, (_, i) =>
       createProblem(i + 1, i + 2, i % 5 === 0 ? '' : undefined),
