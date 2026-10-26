@@ -32,7 +32,7 @@ import {
 } from 'lucide-react';
 
 const formSchema = z.object({
-  line: z.string().min(1, 'Pilih satu meja.'),
+  line: z.string().min(1, 'Pilih satu line.'),
   problem: z.string().min(1, 'Problem wajib diisi.'),
   pic: z.enum(['Produksi', 'MT', 'Trainer', 'QC'], {
     error: 'Pilih salah satu pic.',
@@ -76,7 +76,7 @@ export default function ProblemForm() {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={`${formId}-${field.name}`}>
-                    Meja
+                    Line
                   </FieldLabel>
                   <LineCombobox
                     id={`${formId}-${field.name}`}

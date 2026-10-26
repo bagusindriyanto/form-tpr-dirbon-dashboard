@@ -37,13 +37,13 @@ export default function LineCombobox({
       value={value || null}
       onValueChange={(line) => onValueChange(line ?? '')}
     >
-      <ComboboxInput {...inputProps} showClear placeholder="Cari nama meja" />
+      <ComboboxInput {...inputProps} showClear placeholder="Cari nama line" />
       <ComboboxContent>
         <ComboboxEmpty>
           {isPending ? (
             <span className="shimmer">Memuat...</span>
           ) : isError ? (
-            'Gagal memuat data meja.'
+            'Gagal memuat data line.'
           ) : (
             'Data tidak ditemukan.'
           )}

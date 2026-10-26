@@ -7,18 +7,46 @@ function addTarget(formData: TargetFormData) {
   if (!sheet) throw new Error(`Sheet '${sheetNames.target}' tidak ditemukan`);
 
   const createdAt = new Date();
-  const { line, workingHour, leader, operators, target } = formData;
+  const {
+    line,
+    shift,
+    spo,
+    style,
+    prc,
+    part,
+    workingHour,
+    leader,
+    operators,
+    target,
+  } = formData;
   const manPower = operators.length;
+
+  const lastRow = sheet.getLastRow();
+  const nextRow = lastRow + 1;
 
   sheet.appendRow([
     createdAt,
+    `=IF(
+      (HOUR(A${nextRow})>=0)*
+      (HOUR(A${nextRow})<6)*
+      (D${nextRow}=2),
+      INT(A${nextRow})-1,
+      INT(A${nextRow})
+    )`,
     line,
+    shift,
+    spo,
+    style,
+    prc,
+    part,
     manPower,
     workingHour,
     leader,
     operators.join(', '),
     target,
   ]);
+
+  sheet.getRange(`B${nextRow}`).setNumberFormat('yyyy-MM-dd');
 }
 
 function addOutput(formData: OutputFormData) {
@@ -50,7 +78,13 @@ function addOutput(formData: OutputFormData) {
 
   sheet.appendRow([
     createdAt,
-    `=A${nextRow}`,
+    `=IF(
+      (HOUR(A${nextRow})>=0)*
+      (HOUR(A${nextRow})<6)*
+      (D${nextRow}=2),
+      INT(A${nextRow})-1,
+      INT(A${nextRow})
+    )`,
     line,
     shift,
     type,
@@ -65,6 +99,8 @@ function addOutput(formData: OutputFormData) {
     repair ?? 0,
     reject ?? 0,
   ]);
+
+  sheet.getRange(`B${nextRow}`).setNumberFormat('yyyy-MM-dd');
 }
 
 function addProblem(formData: ProblemFormData) {

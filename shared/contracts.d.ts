@@ -42,6 +42,11 @@ export type Style = {
 
 export type TargetFormData = {
   line: string;
+  shift: '1' | '2';
+  spo: string;
+  style: string;
+  prc: string;
+  part: string;
   workingHour: number;
   leader: Leader['nip'];
   operators: Operator['nip'][];

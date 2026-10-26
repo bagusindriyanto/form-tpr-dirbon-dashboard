@@ -20,7 +20,7 @@ export default function TargetFormDialog() {
         <TargetIcon />
         Update Target
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Form Update Target</DialogTitle>
         </DialogHeader>

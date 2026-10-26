@@ -39,7 +39,7 @@ import { InfoIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { useId } from 'react';
 
 const formSchema = z.object({
-  line: z.string().min(1, 'Pilih satu meja.'),
+  line: z.string().min(1, 'Pilih satu line.'),
   shift: z.enum(['1', '2'], { error: 'Pilih salah satu shift.' }),
   type: z.enum(['SPO', 'GR'], { error: 'Pilih SPO atau GR.' }),
   spo: z.string().min(1, 'SPO wajib diisi.'),
@@ -75,8 +75,7 @@ const formSchema = z.object({
   hour: z
     .number({ error: 'Jam kerja wajib diisi.' })
     .int('Jam kerja harus bilangan bulat.')
-    .min(1, 'Jam kerja minimal 1 jam.')
-    .max(12, 'Jam kerja maksimal 12 jam.'),
+    .min(1, 'Jam kerja minimal 1 jam.'),
   actual: z
     .number({ error: 'Qty aktual wajib diisi.' })
     .nonnegative('Qty aktual tidak boleh negatif.')
@@ -211,7 +210,7 @@ export default function OutputForm() {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={`${formId}-${field.name}`}>
-                    Meja
+                    Line
                   </FieldLabel>
                   <LineCombobox
                     id={`${formId}-${field.name}`}
@@ -221,6 +220,40 @@ export default function OutputForm() {
                     onBlur={field.onBlur}
                     aria-invalid={fieldState.invalid}
                   />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="shift"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={`${formId}-${field.name}`}>
+                    Shift
+                  </FieldLabel>
+                  <Select
+                    name={field.name}
+                    value={field.value ?? null}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger
+                      id={`${formId}-${field.name}`}
+                      aria-invalid={fieldState.invalid}
+                    >
+                      <SelectValue placeholder="Pilih shift" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Shift</SelectLabel>
+                        <SelectItem value="1">1</SelectItem>
+                        <SelectItem value="2">2</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
@@ -489,40 +522,6 @@ export default function OutputForm() {
             />
 
             <Controller
-              name="shift"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={`${formId}-${field.name}`}>
-                    Shift
-                  </FieldLabel>
-                  <Select
-                    name={field.name}
-                    value={field.value ?? null}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger
-                      id={`${formId}-${field.name}`}
-                      aria-invalid={fieldState.invalid}
-                    >
-                      <SelectValue placeholder="Pilih shift" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>Shift</SelectLabel>
-                        <SelectItem value="1">1</SelectItem>
-                        <SelectItem value="2">2</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
               name="hour"
               control={form.control}
               render={({ field, fieldState }) => (
@@ -541,10 +540,9 @@ export default function OutputForm() {
                     aria-invalid={fieldState.invalid}
                     type="number"
                     min={1}
-                    max={12}
                     step={1}
                     inputMode="numeric"
-                    placeholder="Contoh: 8"
+                    placeholder="Contoh: 10"
                     autoComplete="off"
                   />
                   {fieldState.invalid && (
@@ -574,7 +572,7 @@ export default function OutputForm() {
                     type="number"
                     min={1}
                     inputMode="numeric"
-                    placeholder="Contoh: 100"
+                    placeholder="Contoh: 50"
                     autoComplete="off"
                   />
                   {fieldState.invalid && (
@@ -605,7 +603,7 @@ export default function OutputForm() {
                     min={0}
                     step={1}
                     inputMode="numeric"
-                    placeholder="Contoh: 100"
+                    placeholder="Contoh: 5"
                     autoComplete="off"
                   />
                   {fieldState.invalid && (
@@ -636,7 +634,7 @@ export default function OutputForm() {
                     min={0}
                     step={1}
                     inputMode="numeric"
-                    placeholder="Contoh: 100"
+                    placeholder="Contoh: 5"
                     autoComplete="off"
                   />
                   {fieldState.invalid && (
