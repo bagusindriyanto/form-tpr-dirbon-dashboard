@@ -20,7 +20,7 @@ export default function ProblemListDialog() {
         <ListTodoIcon />
         Proses/Finish Problem
       </DialogTrigger>
-      <DialogContent className="sm:max-w-5xl">
+      <DialogContent className="sm:max-w-[calc(100%-2rem)] lg:max-w-5xl">
         <DialogHeader>
           <DialogTitle>Daftar Problem</DialogTitle>
         </DialogHeader>

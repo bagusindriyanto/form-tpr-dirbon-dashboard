@@ -135,7 +135,7 @@ export default function ProblemListTable() {
   };
 
   return (
-    <div className="flex max-h-[70vh] flex-col gap-3">
+    <div className="flex max-h-[70vh] w-full min-w-0 max-w-full flex-col gap-3">
       {/* Toolbar */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
@@ -167,7 +167,7 @@ export default function ProblemListTable() {
       </div>
 
       {/* Table card */}
-      <div className="min-h-0 flex-1 overflow-y-auto rounded-xl border bg-background shadow-sm **:data-[slot=table-container]:overflow-visible">
+      <div className="min-h-0 w-full min-w-0 max-w-full flex-1 overflow-auto rounded-xl border bg-background shadow-sm **:data-[slot=table-container]:overflow-visible">
         <Table className="text-sm">
           <TableHeader className="sticky top-0 z-10 bg-muted/75 backdrop-blur-sm [&_tr]:border-border/80">
             <TableRow className="hover:bg-transparent">
@@ -178,7 +178,9 @@ export default function ProblemListTable() {
                 Waktu Laporan
               </TableHead>
               <TableHead className="w-12 text-muted-foreground">Line</TableHead>
-              <TableHead className="text-muted-foreground">Problem</TableHead>
+              <TableHead className="min-w-35 text-muted-foreground">
+                Problem
+              </TableHead>
               <TableHead className="w-24 text-muted-foreground">PIC</TableHead>
               <TableHead className="w-44 text-muted-foreground">
                 Mulai Proses

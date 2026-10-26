@@ -171,7 +171,7 @@ export default function TargetForm() {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={`${formId}-${field.name}`}>
-                    Target
+                    Target PA/jam
                   </FieldLabel>
                   <Input
                     {...field}
