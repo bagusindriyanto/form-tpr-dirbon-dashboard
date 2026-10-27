@@ -37,6 +37,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { InfoIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { useId } from 'react';
+import type { OutputFormData } from '../../shared/contracts';
 
 const formSchema = z.object({
   line: z.string().min(1, 'Pilih satu line.'),
@@ -91,7 +92,7 @@ const formSchema = z.object({
     .int('Qty reject harus bilangan bulat.')
     .nonnegative('Qty reject tidak boleh negatif.')
     .optional(),
-});
+}) satisfies z.ZodType<Omit<OutputFormData, 'style' | 'prcs' | 'parts'>>;
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -185,8 +186,8 @@ export default function OutputForm() {
       mutateAsync({
         ...rest,
         style,
-        prc: sortedPrcs.map(({ prc }) => prc).join(', '),
-        part: sortedPrcs.map(({ prc }) => styleParts[prc]).join(', '),
+        prcs: sortedPrcs.map(({ prc }) => prc),
+        parts: sortedPrcs.map(({ prc }) => styleParts[prc]),
       }),
       {
         loading: 'Menyimpan...',

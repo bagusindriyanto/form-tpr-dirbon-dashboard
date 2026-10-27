@@ -1,5 +1,10 @@
+export type PIC = 'Produksi' | 'MT' | 'Trainer' | 'QC';
+export type Shift = '1' | '2';
+export type Section = 'TPR' | 'Dirbon';
+export type ProblemAction = 'Start' | 'Finish';
+
 export type LineGroup = {
-  value: 'TPR' | 'Dirbon';
+  value: Section;
   items: string[];
 };
 
@@ -19,8 +24,6 @@ export type Operator = {
   job: string;
 };
 
-export type PIC = 'Produksi' | 'MT' | 'Trainer' | 'QC';
-
 export type Problem = {
   id: number;
   timestamp: string;
@@ -29,6 +32,21 @@ export type Problem = {
   pic: PIC;
   start: string;
   rowNumber: number;
+};
+
+export type Target = {
+  date: string;
+  line: string;
+  shift: Shift;
+  spo: string;
+  style: string;
+  prcs: string[];
+  parts: string[];
+  manPower: number;
+  workingHour: number;
+  leader: Leader['nip'];
+  operators: Operator['nip'][];
+  target: number;
 };
 
 export type StyleGroup = Record<string, Style>;
@@ -40,27 +58,16 @@ export type Style = {
   parts: Record<string, string>;
 };
 
-export type TargetFormData = {
-  line: string;
-  shift: '1' | '2';
-  spo: string;
-  style: string;
-  prc: string;
-  part: string;
-  workingHour: number;
-  leader: Leader['nip'];
-  operators: Operator['nip'][];
-  target: number;
-};
+export type TargetFormData = Omit<Target, 'date' | 'manPower'>;
 
 export type OutputFormData = {
   line: string;
-  shift: '1' | '2';
+  shift: Shift;
   type: 'SPO' | 'GR';
   spo: string;
   style: string;
-  prc: string;
-  part: string;
+  prcs: string[];
+  parts: string[];
   size: string;
   hour: number;
   actual: number;
@@ -73,8 +80,6 @@ export type ProblemFormData = {
   problem: string;
   pic: PIC;
 };
-
-export type ProblemAction = 'Start' | 'Finish';
 
 export type UpdateProblemData = {
   rowNumber: number;

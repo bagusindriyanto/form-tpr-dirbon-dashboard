@@ -81,7 +81,7 @@ const formSchema = z.object({
     .number({ error: 'Target wajib diisi.' })
     .int('Target harus bilangan bulat.')
     .min(1, 'Target minimal 1.'),
-}) satisfies z.ZodType<Omit<TargetFormData, 'style' | 'prc' | 'part'>>;
+}) satisfies z.ZodType<Omit<TargetFormData, 'style' | 'prcs' | 'parts'>>;
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -167,8 +167,8 @@ export default function TargetForm() {
       mutateAsync({
         ...rest,
         style,
-        prc: sortedPrcs.map(({ prc }) => prc).join(', '),
-        part: sortedPrcs.map(({ prc }) => styleParts[prc]).join(', '),
+        prcs: sortedPrcs.map(({ prc }) => prc),
+        parts: sortedPrcs.map(({ prc }) => styleParts[prc]),
       }),
       {
         loading: 'Menyimpan...',
