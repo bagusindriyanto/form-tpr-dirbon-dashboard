@@ -48,3 +48,16 @@ function toDateTimeString(value: CellValue): string {
 
   return String(value).trim();
 }
+
+function toShiftDate(shift: '1' | '2'): Date {
+  const now = new Date();
+  const date = new Date(now);
+  date.setHours(0, 0, 0, 0);
+
+  const hour = now.getHours();
+  if (shift === '2' && hour > 0 && hour < 18) {
+    date.setDate(date.getDate() - 1);
+  }
+
+  return date;
+}

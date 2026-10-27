@@ -30,3 +30,12 @@ function getOrSetCache<T>(
 
   return value;
 }
+
+function invalidateCache(keys: string | string[]): void {
+  const cache = CacheService.getScriptCache();
+  const keysToRemove = Array.isArray(keys) ? keys : [keys];
+
+  if (keysToRemove.length === 0) return;
+
+  cache.removeAll(keysToRemove);
+}

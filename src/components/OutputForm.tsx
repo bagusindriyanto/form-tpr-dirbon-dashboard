@@ -330,14 +330,14 @@ export default function OutputForm() {
               />
 
               <Field>
-                <FieldLabel htmlFor={`${formId}-style`}>Style</FieldLabel>
+                <FieldLabel>Style</FieldLabel>
                 <InputGroup>
                   <InputGroupInput
-                    id={`${formId}-style`}
                     value={selectedStyle}
                     readOnly
+                    tabIndex={-1}
                     placeholder="Style terisi otomatis"
-                    className="truncate"
+                    className="truncate pointer-events-none select-none cursor-default"
                   />
                   {selectedStyle && (
                     <Tooltip>
@@ -407,19 +407,15 @@ export default function OutputForm() {
                       />
 
                       <Field>
-                        <FieldLabel
-                          htmlFor={`${formId}-part-${index}`}
-                          className="sr-only"
-                        >
+                        <FieldLabel className="sr-only">
                           Part {index + 1}
                         </FieldLabel>
                         <InputGroup>
                           <InputGroupInput
-                            id={`${formId}-part-${index}`}
                             value={part}
                             readOnly
                             placeholder="Part terisi otomatis"
-                            className="truncate"
+                            className="truncate pointer-events-none select-none cursor-default"
                           />
                           {(part || fields.length > 1) && (
                             <InputGroupAddon align="inline-end">

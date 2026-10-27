@@ -1,4 +1,4 @@
-function addTarget(formData: TargetFormData) {
+function addTarget(targetFormData: TargetFormData) {
   const {
     database: { spreadsheetId, sheetNames },
   } = SPREADSHEET_CONFIG;
@@ -18,8 +18,9 @@ function addTarget(formData: TargetFormData) {
     leader,
     operators,
     target,
-  } = formData;
+  } = targetFormData;
   const manPower = operators.length;
+  const recordDate = toShiftDate(shift);
 
   const lastRow = sheet.getLastRow();
   const nextRow = lastRow + 1;
@@ -28,7 +29,7 @@ function addTarget(formData: TargetFormData) {
     createdAt,
     `=IF(
       (HOUR(A${nextRow})>=0)*
-      (HOUR(A${nextRow})<6)*
+      (HOUR(A${nextRow})<18)*
       (D${nextRow}=2),
       INT(A${nextRow})-1,
       INT(A${nextRow})
@@ -49,7 +50,7 @@ function addTarget(formData: TargetFormData) {
   sheet.getRange(`B${nextRow}`).setNumberFormat('yyyy-MM-dd');
 }
 
-function addOutput(formData: OutputFormData) {
+function addOutput(outputFormData: OutputFormData) {
   const {
     database: { spreadsheetId, sheetNames },
   } = SPREADSHEET_CONFIG;
@@ -71,7 +72,8 @@ function addOutput(formData: OutputFormData) {
     actual,
     repair,
     reject,
-  } = formData;
+  } = outputFormData;
+  const recordDate = toShiftDate(shift);
 
   const lastRow = sheet.getLastRow();
   const nextRow = lastRow + 1;
@@ -80,7 +82,7 @@ function addOutput(formData: OutputFormData) {
     createdAt,
     `=IF(
       (HOUR(A${nextRow})>=0)*
-      (HOUR(A${nextRow})<6)*
+      (HOUR(A${nextRow})<18)*
       (D${nextRow}=2),
       INT(A${nextRow})-1,
       INT(A${nextRow})
@@ -103,7 +105,7 @@ function addOutput(formData: OutputFormData) {
   sheet.getRange(`B${nextRow}`).setNumberFormat('yyyy-MM-dd');
 }
 
-function addProblem(formData: ProblemFormData) {
+function addProblem(problemFormData: ProblemFormData) {
   const {
     tprDirbon: { spreadsheetId, sheetNames },
   } = SPREADSHEET_CONFIG;
@@ -112,7 +114,7 @@ function addProblem(formData: ProblemFormData) {
   if (!sheet) throw new Error(`Sheet '${sheetNames.kanban}' tidak ditemukan`);
 
   const createdAt = new Date();
-  const { line, problem, pic } = formData;
+  const { line, problem, pic } = problemFormData;
 
   const lastRow = sheet.getLastRow();
   const nextRow = lastRow + 1;
