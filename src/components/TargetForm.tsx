@@ -72,7 +72,8 @@ const formSchema = z.object({
   workingHour: z
     .number({ error: 'Jam kerja wajib diisi.' })
     .int('Jam kerja harus bilangan bulat.')
-    .min(1, 'Minimal 1 jam.'),
+    .min(1, 'Minimal 1 jam.')
+    .max(11, 'Maksimal 11 jam.'),
   leader: z.string().min(1, 'Pilih satu leader.'),
   operators: z
     .array(z.string().min(1, 'Operator wajib diisi.'))
@@ -176,7 +177,10 @@ export default function TargetForm() {
           form.reset();
           return 'Data berhasil disimpan!';
         },
-        error: 'Data gagal disimpan!',
+        error: (err: Error) => ({
+          message: 'Data gagal disimpan!',
+          description: err.message,
+        }),
       },
     );
   }
@@ -262,6 +266,7 @@ export default function TargetForm() {
                     aria-invalid={fieldState.invalid}
                     type="number"
                     min={1}
+                    max={11}
                     step={1}
                     inputMode="numeric"
                     placeholder="Contoh: 10"
@@ -515,8 +520,9 @@ export default function TargetForm() {
                     aria-invalid={fieldState.invalid}
                     type="number"
                     min={1}
+                    step={1}
                     inputMode="numeric"
-                    placeholder="Contoh: 50"
+                    placeholder="Contoh: 500"
                     autoComplete="off"
                   />
                   {fieldState.invalid && (

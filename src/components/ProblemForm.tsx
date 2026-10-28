@@ -61,7 +61,10 @@ export default function ProblemForm() {
         form.reset();
         return 'Data berhasil disimpan!';
       },
-      error: 'Data gagal disimpan!',
+      error: (err: Error) => ({
+        message: 'Data gagal disimpan!',
+        description: err.message,
+      }),
     });
   }
 

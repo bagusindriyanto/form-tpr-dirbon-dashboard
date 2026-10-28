@@ -137,7 +137,7 @@ export default function ProblemListTable() {
   return (
     <div className="flex max-h-[70vh] w-full min-w-0 max-w-full flex-col gap-3">
       {/* Toolbar */}
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2">
           <Badge variant="secondary">
             <ListTodoIcon data-icon="inline-start" />
