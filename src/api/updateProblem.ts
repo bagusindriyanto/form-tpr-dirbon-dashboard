@@ -1,13 +1,12 @@
 import { useMutation } from '@tanstack/react-query';
 import type { Problem, UpdateProblemData } from '@/types/problem';
 import { runGas } from '@/lib/gas';
+import { PROBLEMS_QUERY_KEY } from './queryKeys';
 
-const PROBLEMS_QUERY_KEY = ['problems'] as const;
-
-function applyProblemUpdate(
+const applyProblemUpdate = (
   problems: Problem[],
   { rowNumber, action }: UpdateProblemData,
-): Problem[] {
+): Problem[] => {
   if (action === 'Finish') {
     return problems.filter((problem) => problem.rowNumber !== rowNumber);
   }
@@ -17,7 +16,7 @@ function applyProblemUpdate(
       ? { ...problem, start: 'Memuat...' }
       : problem,
   );
-}
+};
 
 export const useUpdateProblem = () => {
   return useMutation({

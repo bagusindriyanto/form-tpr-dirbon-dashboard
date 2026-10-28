@@ -2,6 +2,7 @@ import { runGas } from '@/lib/gas';
 import type { Operator, OperatorGroup } from '@/types/operator';
 import { useQuery } from '@tanstack/react-query';
 import type { GasFunctions } from '../../shared/contracts';
+import { MEMBERS_QUERY_KEY } from './queryKeys';
 
 const toGroups = (
   data: ReturnType<GasFunctions['getMembers']>,
@@ -24,8 +25,9 @@ const toGroups = (
 
 export const useGetOperators = () => {
   return useQuery({
-    queryKey: ['members'],
+    queryKey: MEMBERS_QUERY_KEY,
     queryFn: () => runGas('getMembers'),
     select: toGroups,
+    staleTime: 6 * 60 * 60 * 1000,
   });
 };
