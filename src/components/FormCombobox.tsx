@@ -6,8 +6,11 @@ import {
   ComboboxItem,
   ComboboxList,
 } from '@/components/ui/combobox';
+import { InputGroupAddon, InputGroupButton } from '@/components/ui/input-group';
+import { cn } from '@/lib/utils';
 import { Combobox as ComboboxPrimitive } from '@base-ui/react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { RefreshCwIcon } from 'lucide-react';
 import {
   type ComponentProps,
   type RefObject,
@@ -32,6 +35,8 @@ type ComboboxProps = Omit<
   value: string;
   isPending?: boolean;
   isError?: boolean;
+  isRefreshing?: boolean;
+  onRefresh?: () => void;
   onValueChange: (name: string) => void;
 };
 
@@ -40,6 +45,8 @@ export default function FormCombobox({
   value,
   isPending = false,
   isError = false,
+  isRefreshing = false,
+  onRefresh,
   onValueChange,
   ...inputProps
 }: ComboboxProps) {
@@ -64,7 +71,23 @@ export default function FormCombobox({
         });
       }}
     >
-      <ComboboxInput {...inputProps} showClear />
+      <ComboboxInput {...inputProps} showClear showTrigger={false}>
+        {onRefresh && !value && (
+          <InputGroupAddon align="inline-end" className="order-0 pr-0">
+            <InputGroupButton
+              type="button"
+              size="icon-xs"
+              variant="ghost"
+              aria-label="Muat ulang data"
+              title="Muat ulang data"
+              disabled={isRefreshing}
+              onClick={onRefresh}
+            >
+              <RefreshCwIcon className={cn(isRefreshing && 'animate-spin')} />
+            </InputGroupButton>
+          </InputGroupAddon>
+        )}
+      </ComboboxInput>
       <ComboboxContent>
         <ComboboxEmpty>
           {isPending ? (

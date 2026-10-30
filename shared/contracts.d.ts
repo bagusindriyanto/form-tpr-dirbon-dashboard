@@ -1,5 +1,6 @@
 export type PIC = 'Produksi' | 'MT' | 'Trainer' | 'QC';
 export type Shift = '1' | '2';
+export type OutputType = 'SPO' | 'GR';
 export type Section = 'TPR' | 'Dirbon';
 export type ProblemAction = 'Start' | 'Finish';
 
@@ -63,7 +64,7 @@ export type TargetFormData = Omit<Target, 'date' | 'manPower'>;
 export type OutputFormData = {
   line: string;
   shift: Shift;
-  type: 'SPO' | 'GR';
+  type: OutputType;
   spo: string;
   style: string;
   prcs: string[];

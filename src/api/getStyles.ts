@@ -6,6 +6,6 @@ export const useGetStyles = () => {
   return useQuery({
     queryKey: STYLES_QUERY_KEY,
     queryFn: () => runGas('getStyles'),
-    staleTime: 6 * 60 * 60 * 1000,
+    staleTime: 3 * 60 * 60 * 1000,
   });
 };

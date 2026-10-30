@@ -49,7 +49,7 @@ function getMembers(): ReturnType<GasFunctions['getMembers']> {
 
 function getStylesFromSheet(): StyleGroup {
   const {
-    inputOutput: { spreadsheetId, sheetNames },
+    lkh: { spreadsheetId, sheetNames },
   } = SPREADSHEET_CONFIG;
 
   const spreadsheet = SpreadsheetApp.openById(spreadsheetId);

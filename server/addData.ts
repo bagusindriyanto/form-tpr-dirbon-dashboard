@@ -20,7 +20,6 @@ function addTarget(targetFormData: TargetFormData) {
     target,
   } = targetFormData;
   const manPower = operators.length;
-  const recordDate = toShiftDate(shift);
 
   const lastRow = sheet.getLastRow();
   const nextRow = lastRow + 1;
@@ -51,13 +50,6 @@ function addTarget(targetFormData: TargetFormData) {
 }
 
 function addOutput(outputFormData: OutputFormData) {
-  const {
-    database: { spreadsheetId, sheetNames },
-  } = SPREADSHEET_CONFIG;
-  const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
-  const sheet = spreadsheet.getSheetByName(sheetNames.output);
-  if (!sheet) throw new Error(`Sheet '${sheetNames.output}' tidak ditemukan`);
-
   const createdAt = new Date();
   const {
     line,
@@ -73,8 +65,22 @@ function addOutput(outputFormData: OutputFormData) {
     repair,
     reject,
   } = outputFormData;
-  const recordDate = toShiftDate(shift);
+  const recordDate = getShiftDate(shift);
 
+  // 1. Menambahkan formData ke LKH
+  if (line.startsWith('D')) {
+    updateLKHDirbon(outputFormData, recordDate);
+  } else if (line.startsWith('T')) {
+    updateLKHTPR(outputFormData, recordDate);
+  }
+
+  // 2. Menambahkan formData ke Trial Form TPR Dirbon
+  const {
+    database: { spreadsheetId, sheetNames },
+  } = SPREADSHEET_CONFIG;
+  const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+  const sheet = spreadsheet.getSheetByName(sheetNames.output);
+  if (!sheet) throw new Error(`Sheet '${sheetNames.output}' tidak ditemukan`);
   const lastRow = sheet.getLastRow();
   const nextRow = lastRow + 1;
 

@@ -107,6 +107,8 @@ export default function OutputForm() {
     data: styleGroup,
     isPending: isStylesPending,
     isError: isStylesError,
+    isFetching: isStylesFetching,
+    refetch: refetchStyles,
   } = useGetStyles();
   const {
     data: sizeGroup,
@@ -326,6 +328,8 @@ export default function OutputForm() {
                       }}
                       isPending={isStylesPending}
                       isError={isStylesError}
+                      isRefreshing={isStylesFetching}
+                      onRefresh={() => refetchStyles()}
                     />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />

@@ -2,15 +2,16 @@ const SPREADSHEET_CONFIG = {
   database: {
     spreadsheetId: '1AtRp3wCRilR-WYhpbL7MC2-thMHI2O-plKObyQB0p7A',
     sheetNames: {
-      mechanic: 'Mekanik',
       member: 'Operator',
       target: 'Target',
       output: 'Output',
     },
   },
-  inputOutput: {
+  lkh: {
     spreadsheetId: '1Z5k7RuMQa-zlJr8dk2eUQ5NlVlpkDJCtMAk5HPoJeJE',
     sheetNames: {
+      dirbon: '[Trial] OUTPUT DIRBON/JAM',
+      tpr: '[Trial] Output TPR/Jam',
       spoAndPrc: 'Daftar SPOPRC',
     },
   },
@@ -21,7 +22,7 @@ const SPREADSHEET_CONFIG = {
     },
   },
   tprDirbon: {
-    spreadsheetId: '1k2T6xSjR7pGUwDwwDzIP2McvCIfWXtdQFVGNpxTzN7o',
+    spreadsheetId: '1ky7rSxy20KQJ3zcZw0mVY4qE48G6CKAjAbb3zybEmKk',
     sheetNames: {
       kanban: 'Kanban',
     },

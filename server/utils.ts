@@ -28,6 +28,14 @@ function toString(value: CellValue): string {
   return result.trim();
 }
 
+function toDate(value: CellValue): Date {
+  if (!(value instanceof Date)) {
+    throw new Error('Nilai sel harus berupa tanggal');
+  }
+
+  return value;
+}
+
 const DATE_TIME_FORMAT = 'dd/MM/yyyy HH:mm:ss';
 
 function toDateTimeString(value: CellValue): string {
@@ -47,17 +55,4 @@ function toDateTimeString(value: CellValue): string {
   }
 
   return String(value).trim();
-}
-
-function toShiftDate(shift: '1' | '2'): Date {
-  const now = new Date();
-  const date = new Date(now);
-  date.setHours(0, 0, 0, 0);
-
-  const hour = now.getHours();
-  if (shift === '2' && hour > 0 && hour < 18) {
-    date.setDate(date.getDate() - 1);
-  }
-
-  return date;
 }

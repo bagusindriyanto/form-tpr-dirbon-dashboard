@@ -39,3 +39,37 @@ function invalidateCache(keys: string | string[]): void {
 
   cache.removeAll(keysToRemove);
 }
+
+function findText(
+  sheet: GoogleAppsScript.Spreadsheet.Sheet,
+  startRow: number,
+  lastRow: number,
+  colNumber: number,
+  text: string,
+  {
+    matchEntireCell = false,
+    matchCase = false,
+    useRegularExpression = false,
+  }: FindTextOptions = {},
+): FindTextResult {
+  if (text === '') {
+    throw new Error('Text pencarian tidak boleh kosong.');
+  }
+
+  const hits = sheet
+    .getRange(startRow, colNumber, lastRow - startRow + 1, 1)
+    .createTextFinder(text)
+    .matchEntireCell(matchEntireCell)
+    .matchCase(matchCase)
+    .useRegularExpression(useRegularExpression)
+    .findAll();
+
+  if (hits.length === 0) {
+    return null;
+  }
+
+  return {
+    firstMatchRow: hits[0].getRow(),
+    lastMatchRow: hits[hits.length - 1].getRow(),
+  };
+}
