@@ -4,7 +4,7 @@ function getShiftDate(shift: '1' | '2'): Date {
   date.setHours(0, 0, 0, 0);
 
   const hour = now.getHours();
-  if (shift === '2' && hour > 0 && hour < 18) {
+  if (shift === '2' && hour < 18) {
     date.setDate(date.getDate() - 1);
   }
 
@@ -295,7 +295,6 @@ function createJobBlocksDirbon(
   target: MatchedTarget,
   jobs: Job[],
 ): { job: Job; rows: number[] }[] {
-  const start = Date.now();
   if (!jobs.length) return [];
   const { operators, leader, mp } = target;
 
@@ -304,11 +303,8 @@ function createJobBlocksDirbon(
   }
 
   const START_ROW = 4;
-  let t = Date.now();
   const writeRow = getNextLKHRow(sheet, START_ROW);
-  Logger.log(`  └─ getNextLKHRow: ${Date.now() - t} ms`);
 
-  t = Date.now();
   const data: CellValue[][] = [];
   const createdJobs: { job: Job; rows: number[] }[] = [];
 
@@ -354,13 +350,8 @@ function createJobBlocksDirbon(
       rows: jobRows,
     });
   }
-  Logger.log(`  └─ build data: ${Date.now() - t} ms`);
-
-  t = Date.now();
 
   sheet.getRange(writeRow, 1, data.length, 18).setValues(data);
-  Logger.log(`  └─ setValues: ${Date.now() - t} ms`);
-  Logger.log(`  └─ TOTAL create: ${Date.now() - start} ms`);
 
   return createdJobs;
 }
@@ -370,7 +361,6 @@ function createJobBlocksTPR(
   target: MatchedTarget,
   jobs: Job[],
 ): { job: Job; rows: number[] }[] {
-  const start = Date.now();
   if (!jobs.length) return [];
   const { operators, leader } = target;
 
@@ -379,10 +369,7 @@ function createJobBlocksTPR(
   }
 
   const START_ROW = 3;
-  let t = Date.now();
   const writeRow = getNextLKHRow(sheet, START_ROW);
-  Logger.log(`  └─ getNextLKHRow: ${Date.now() - t} ms`);
-  t = Date.now();
   const data: CellValue[][] = [];
   const createdJobs: { job: Job; rows: number[] }[] = [];
 
@@ -425,25 +412,17 @@ function createJobBlocksTPR(
       rows: jobRows,
     });
   }
-  Logger.log(`  └─ build data: ${Date.now() - t} ms`);
-
-  t = Date.now();
 
   sheet.getRange(writeRow, 1, data.length, 18).setValues(data);
-  Logger.log(`  └─ setValues: ${Date.now() - t} ms`);
-  Logger.log(`  └─ TOTAL create: ${Date.now() - start} ms`);
 
   return createdJobs;
 }
 
 function updateLKHTPR(formData: OutputFormData, recordDate: Date) {
-  const start = Date.now();
   const { line, shift, type, spo, style, prcs, parts, size, hour, actual } =
     formData;
 
-  let t = Date.now();
   const target = getTarget(formData, recordDate);
-  Logger.log(`getTarget: ${Date.now() - t} ms`);
 
   if (!target) {
     throw new Error(
@@ -452,7 +431,6 @@ function updateLKHTPR(formData: OutputFormData, recordDate: Date) {
   }
 
   // lkh
-  t = Date.now();
   const {
     lkh: { spreadsheetId, sheetNames },
   } = SPREADSHEET_CONFIG;
@@ -462,7 +440,6 @@ function updateLKHTPR(formData: OutputFormData, recordDate: Date) {
   if (!sheet) {
     throw new Error(`Sheet '${sheetName}' tidak ditemukan`);
   }
-  Logger.log(`open LKH: ${Date.now() - t} ms`);
   // =====================================================
   // VALIDASI JAM
   // =====================================================
@@ -492,12 +469,9 @@ function updateLKHTPR(formData: OutputFormData, recordDate: Date) {
 
   const jobResults: { job: Job; rows: number[] }[] = [];
   const newJobs: Job[] = [];
-  t = Date.now();
 
   const foundJobs = findJobsRowsTPR(sheet, jobs);
-  Logger.log(`findJobRowsTPR: ${Date.now() - t} ms`);
 
-  t = Date.now();
   for (const result of foundJobs) {
     if (result.rows.length) {
       mergeJobSize(sheet, result.rows, 17, result.job.size);
@@ -507,17 +481,11 @@ function updateLKHTPR(formData: OutputFormData, recordDate: Date) {
     }
   }
 
-  Logger.log(`Looping newJob: ${Date.now() - t} ms`);
-
-  t = Date.now();
   if (newJobs.length) {
     const createdJobs = createJobBlocksTPR(sheet, target, newJobs);
     jobResults.push(...createdJobs);
   }
 
-  Logger.log(`createJobBlocksTPR: ${Date.now() - t} ms`);
-
-  t = Date.now();
   const actualValue = Number(actual) || 0;
 
   const ranges = jobResults.map((result) =>
@@ -527,9 +495,6 @@ function updateLKHTPR(formData: OutputFormData, recordDate: Date) {
   if (ranges.length) {
     sheet.getRangeList(ranges).setValue(actualValue);
   }
-
-  Logger.log(`write actual: ${Date.now() - t} ms`);
-  Logger.log(`TOTAL: ${Date.now() - start} ms`);
 
   // for (let i = 0; i < prcs.length; i++) {
 
@@ -569,14 +534,11 @@ function updateLKHTPR(formData: OutputFormData, recordDate: Date) {
 
 function updateLKHDirbon(formData: OutputFormData, recordDate: Date) {
   // data output
-  const start = Date.now();
   const { line, shift, type, spo, style, prcs, parts, size, hour, actual } =
     formData;
 
   // target
-  let t = Date.now();
   const target = getTarget(formData, recordDate);
-  Logger.log(`getTarget: ${Date.now() - t} ms`);
 
   if (!target) {
     throw new Error(
@@ -585,7 +547,6 @@ function updateLKHDirbon(formData: OutputFormData, recordDate: Date) {
   }
 
   // lkh
-  t = Date.now();
   const {
     lkh: { spreadsheetId, sheetNames },
   } = SPREADSHEET_CONFIG;
@@ -596,7 +557,6 @@ function updateLKHDirbon(formData: OutputFormData, recordDate: Date) {
     throw new Error(`Sheet '${sheetName}' tidak ditemukan`);
   }
 
-  Logger.log(`open LKH: ${Date.now() - t} ms`);
   // =====================================================
   // VALIDASI JAM
   // =====================================================
@@ -626,12 +586,9 @@ function updateLKHDirbon(formData: OutputFormData, recordDate: Date) {
 
   const jobResults: { job: Job; rows: number[] }[] = [];
   const newJobs: Job[] = [];
-  t = Date.now();
 
   const foundJobs = findJobsRowsDirbon(sheet, jobs);
-  Logger.log(`findJobRowsDirbon: ${Date.now() - t} ms`);
 
-  t = Date.now();
   for (const result of foundJobs) {
     if (result.rows.length) {
       mergeJobSize(sheet, result.rows, 18, result.job.size);
@@ -641,17 +598,11 @@ function updateLKHDirbon(formData: OutputFormData, recordDate: Date) {
     }
   }
 
-  Logger.log(`Looping newJob: ${Date.now() - t} ms`);
-
-  t = Date.now();
   if (newJobs.length) {
     const createdJobs = createJobBlocksDirbon(sheet, target, newJobs);
     jobResults.push(...createdJobs);
   }
 
-  Logger.log(`createJobBlocksDirbon: ${Date.now() - t} ms`);
-
-  t = Date.now();
   const actualValue = Number(actual) || 0;
 
   const ranges = jobResults.map((result) =>
@@ -661,7 +612,4 @@ function updateLKHDirbon(formData: OutputFormData, recordDate: Date) {
   if (ranges.length) {
     sheet.getRangeList(ranges).setValue(actualValue);
   }
-
-  Logger.log(`write actual: ${Date.now() - t} ms`);
-  Logger.log(`TOTAL: ${Date.now() - start} ms`);
 }

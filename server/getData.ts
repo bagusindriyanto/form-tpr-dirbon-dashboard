@@ -14,7 +14,7 @@ function getLines(): ReturnType<GasFunctions['getLines']> {
   ];
 }
 
-function getMembers(): ReturnType<GasFunctions['getMembers']> {
+function getMembersFromSheet(): { leaders: Leader[]; operators: Operator[] } {
   const {
     database: { spreadsheetId, sheetNames },
   } = SPREADSHEET_CONFIG;
@@ -45,6 +45,12 @@ function getMembers(): ReturnType<GasFunctions['getMembers']> {
   });
 
   return { leaders, operators };
+}
+
+// Dipakai saat menyusun blok LKH. Cache singkat mengurangi waktu baca sheet
+// dan memperpendek masa ScriptLock.
+function getMembers(): ReturnType<GasFunctions['getMembers']> {
+  return getOrSetCache('members', getMembersFromSheet, { ttl: 10 * 60 });
 }
 
 function getStylesFromSheet(): StyleGroup {
