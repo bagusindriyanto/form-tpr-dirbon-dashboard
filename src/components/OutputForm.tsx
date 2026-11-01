@@ -193,13 +193,13 @@ export default function OutputForm() {
         parts: sortedPrcs.map(({ prc }) => styleParts[prc]),
       }),
       {
-        loading: 'Menyimpan...',
+        loading: 'Menambahkan data output...',
         success: () => {
           form.reset();
-          return 'Data berhasil disimpan!';
+          return 'Data output berhasil ditambahkan!';
         },
         error: (err: Error) => ({
-          message: 'Data gagal disimpan!',
+          message: 'Data output gagal ditambahkan!',
           description: err.message,
         }),
       },

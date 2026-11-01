@@ -96,6 +96,8 @@ export default function TargetForm() {
     data: styleGroup,
     isPending: isStylesPending,
     isError: isStylesError,
+    isFetching: isStylesFetching,
+    refetch: refetchStyles,
   } = useGetStyles();
   const { mutateAsync, isPending } = useAddTarget();
 
@@ -172,13 +174,13 @@ export default function TargetForm() {
         parts: sortedPrcs.map(({ prc }) => styleParts[prc]),
       }),
       {
-        loading: 'Menyimpan...',
+        loading: 'Menambahkan data target...',
         success: () => {
           form.reset();
-          return 'Data berhasil disimpan!';
+          return 'Data target berhasil ditambahkan!';
         },
         error: (err: Error) => ({
-          message: 'Data gagal disimpan!',
+          message: 'Data target gagal ditambahkan!',
           description: err.message,
         }),
       },
@@ -302,6 +304,8 @@ export default function TargetForm() {
                       }}
                       isPending={isStylesPending}
                       isError={isStylesError}
+                      isRefreshing={isStylesFetching}
+                      onRefresh={() => refetchStyles()}
                     />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />

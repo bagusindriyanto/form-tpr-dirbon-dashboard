@@ -421,12 +421,13 @@ function createJobBlocksTPR(
 function updateLKHTPR(formData: OutputFormData, recordDate: Date) {
   const { line, shift, type, spo, style, prcs, parts, size, hour, actual } =
     formData;
+  const formattedRecordDate = toDateString(recordDate);
 
   const target = getTarget(formData, recordDate);
 
   if (!target) {
     throw new Error(
-      `Target untuk Line ${line} tanggal ` + `${recordDate} tidak ditemukan`,
+      `Target untuk Line ${line} shift ${shift} tanggal ${formattedRecordDate} tidak ditemukan`,
     );
   }
 
@@ -495,54 +496,18 @@ function updateLKHTPR(formData: OutputFormData, recordDate: Date) {
   if (ranges.length) {
     sheet.getRangeList(ranges).setValue(actualValue);
   }
-
-  // for (let i = 0; i < prcs.length; i++) {
-
-  //   const job = {
-  //     tanggal: recordDate,
-  //     shift: shift,
-  //     line: line.replace(/^([A-Z])0+/, "$1"),
-  //     type: type,
-  //     spo: spo,
-  //     style: style,
-
-  //     // 1 PRC = 1 JOB
-  //     prcs: prcs[i],
-  //     parts: parts[i],
-
-  //     size: size,
-  //   };
-
-  //   // cek job yg sudah ada
-  //   let jobRows = findJobRowsTPR(sheet, job);
-
-  //   // job belum ada
-  //   if (jobRows.length === 0) {
-  //     jobRows = createJobBlockTPR(sheet, target, job);
-  //   } else {
-  //     mergeJobSize(sheet, jobRows, 17, job.size);
-  //   }
-
-  //   // output hanya masuk baris operator pertama
-  //   const firstRow = jobRows[0];
-
-  //   sheet
-  //     .getRange(firstRow, outputColumn)
-  //     .setValue(Number(actual) || 0);
-  // }
 }
 
 function updateLKHDirbon(formData: OutputFormData, recordDate: Date) {
-  // data output
   const { line, shift, type, spo, style, prcs, parts, size, hour, actual } =
     formData;
+  const formattedRecordDate = toDateString(recordDate);
 
-  // target
   const target = getTarget(formData, recordDate);
 
   if (!target) {
     throw new Error(
-      `Target untuk Line ${line} tanggal ` + `${recordDate} tidak ditemukan`,
+      `Target untuk Line ${line} shift ${shift} tanggal ${formattedRecordDate} tidak ditemukan`,
     );
   }
 
