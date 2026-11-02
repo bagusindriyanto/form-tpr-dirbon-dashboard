@@ -28,12 +28,18 @@ function addTarget(targetFormData: TargetFormData) {
     sheet.appendRow([
       createdAt,
       `=IF(
-      (HOUR(A${nextRow})>=0)*
-      (HOUR(A${nextRow})<18)*
-      (D${nextRow}=2),
-      INT(A${nextRow})-1,
-      INT(A${nextRow})
-    )`,
+        AND(D${nextRow}=2,HOUR(A${nextRow})<18),
+        IF(
+          WEEKDAY(INT(A${nextRow}),2)=1,
+          INT(A${nextRow})-2,
+          INT(A${nextRow})-1
+        ),
+        IF(
+          AND(D${nextRow}=2,WEEKDAY(INT(A${nextRow}),2)=7),
+          INT(A${nextRow})-1,
+          INT(A${nextRow})
+        )
+      )`,
       line,
       shift,
       spo,
@@ -45,6 +51,7 @@ function addTarget(targetFormData: TargetFormData) {
       leader,
       operators.join(', '),
       target,
+      `=ROW()`,
     ]);
 
     sheet.getRange(`B${nextRow}`).setNumberFormat('yyyy-MM-dd');
@@ -90,12 +97,18 @@ function addOutput(outputFormData: OutputFormData) {
     sheet.appendRow([
       createdAt,
       `=IF(
-      (HOUR(A${nextRow})>=0)*
-      (HOUR(A${nextRow})<18)*
-      (D${nextRow}=2),
-      INT(A${nextRow})-1,
-      INT(A${nextRow})
-    )`,
+        AND(D${nextRow}=2,HOUR(A${nextRow})<18),
+        IF(
+          WEEKDAY(INT(A${nextRow}),2)=1,
+          INT(A${nextRow})-2,
+          INT(A${nextRow})-1
+        ),
+        IF(
+          AND(D${nextRow}=2,WEEKDAY(INT(A${nextRow}),2)=7),
+          INT(A${nextRow})-1,
+          INT(A${nextRow})
+        )
+      )`,
       line,
       shift,
       type,

@@ -4,7 +4,12 @@ function getShiftDate(shift: '1' | '2'): Date {
   date.setHours(0, 0, 0, 0);
 
   const hour = now.getHours();
-  if (shift === '2' && hour < 18) {
+  const day = now.getDay();
+  if (day === 0) {
+    date.setDate(date.getDate() - 1);
+  } else if (day === 1 && shift === '2' && hour < 18) {
+    date.setDate(date.getDate() - 2);
+  } else if (shift === '2' && hour < 18) {
     date.setDate(date.getDate() - 1);
   }
 
@@ -494,7 +499,9 @@ function updateLKHTPR(formData: OutputFormData, recordDate: Date) {
   );
 
   if (ranges.length) {
-    sheet.getRangeList(ranges).setValue(actualValue);
+    const currentValue = Number(sheet.getRange(ranges[0]).getValue()) || 0;
+
+    sheet.getRangeList(ranges).setValue(currentValue + actualValue);
   }
 }
 
@@ -575,6 +582,8 @@ function updateLKHDirbon(formData: OutputFormData, recordDate: Date) {
   );
 
   if (ranges.length) {
-    sheet.getRangeList(ranges).setValue(actualValue);
+    const currentValue = Number(sheet.getRange(ranges[0]).getValue()) || 0;
+
+    sheet.getRangeList(ranges).setValue(currentValue + actualValue);
   }
 }
