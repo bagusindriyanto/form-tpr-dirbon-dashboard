@@ -34,11 +34,16 @@ type ComboboxProps = Omit<
 > & {
   value: string[];
   onValueChange: (nips: string[]) => void;
+  /** Batasi chip yang tampil, sisanya diringkas menjadi "+N". */
+  maxVisible?: number;
+  chipsClassName?: string;
 };
 
 export default function OperatorCombobox({
   value,
   onValueChange,
+  maxVisible,
+  chipsClassName,
   ...inputProps
 }: ComboboxProps) {
   const anchor = useComboboxAnchor();
@@ -53,6 +58,9 @@ export default function OperatorCombobox({
   const selected = value
     .map((nip) => byNip.get(nip))
     .filter((operator) => operator !== undefined);
+  const visible =
+    typeof maxVisible === 'number' ? selected.slice(0, maxVisible) : selected;
+  const hiddenCount = selected.length - visible.length;
 
   return (
     <Combobox
@@ -71,13 +79,20 @@ export default function OperatorCombobox({
         )
       }
     >
-      <ComboboxChips ref={anchor}>
+      <ComboboxChips ref={anchor} className={chipsClassName}>
         <ComboboxValue>
           {(operators: Operator[]) => (
             <Fragment>
-              {operators.map((operator) => (
-                <ComboboxChip key={operator.nip}>{operator.name}</ComboboxChip>
-              ))}
+              {(maxVisible === undefined ? operators : visible).map(
+                (operator) => (
+                  <ComboboxChip key={operator.nip}>
+                    {operator.name}
+                  </ComboboxChip>
+                ),
+              )}
+              {hiddenCount > 0 && (
+                <ComboboxChip showRemove={false}>+{hiddenCount}</ComboboxChip>
+              )}
               <ComboboxChipsInput
                 {...inputProps}
                 placeholder={

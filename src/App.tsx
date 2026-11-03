@@ -1,4 +1,5 @@
 import TargetFormDialog from './components/TargetFormDialog';
+import TargetEditDialog from './components/TargetEditDialog';
 import OutputFormDialog from './components/OutputFormDialog';
 import ProblemFormDialog from './components/ProblemFormDialog';
 import ProblemListDialog from './components/ProblemListDialog';
@@ -17,6 +18,7 @@ function App() {
         <Separator className="my-2" />
         <CardContent className="px-0 flex flex-col gap-3">
           <TargetFormDialog />
+          <TargetEditDialog />
           <OutputFormDialog />
           <ProblemFormDialog />
           <ProblemListDialog />

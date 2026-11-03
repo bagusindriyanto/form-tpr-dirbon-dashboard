@@ -162,3 +162,44 @@ function getProblems(): ReturnType<GasFunctions['getProblems']> {
 
   return problems;
 }
+
+function getTargets(): ReturnType<GasFunctions['getTargets']> {
+  const {
+    database: { spreadsheetId, sheetNames },
+  } = SPREADSHEET_CONFIG;
+  const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+  const sheet = spreadsheet.getSheetByName(sheetNames.target);
+  if (!sheet) throw new Error(`Sheet '${sheetNames.target}' tidak ditemukan`);
+
+  const [, ...data]: CellValue[][] = sheet.getDataRange().getValues();
+  const targets = data.reduce<Target[]>((result, row) => {
+    const line = toString(row[2]);
+    const spo = toString(row[4]);
+    const target = toNumber(row[12]);
+
+    // Kolom B dan N berisi formula, jadi getDataRange ikut membaca baris
+    // kosong di bawah data. Baris tanpa isi tidak perlu ditampilkan di grid.
+    if (!line && !spo && !target) return result;
+
+    result.push({
+      createdAt: toDateTimeString(row[0]),
+      date: toDateString(row[1]),
+      line,
+      shift: toString(row[3]) as Shift,
+      spo,
+      style: toString(row[5]),
+      prcs: splitCellList(row[6]),
+      parts: splitCellList(row[7]),
+      manPower: toNumber(row[8]),
+      workingHour: toNumber(row[9]),
+      leader: toString(row[10]),
+      operators: splitCellList(row[11]),
+      target,
+      rowNumber: toNumber(row[13]),
+    });
+
+    return result;
+  }, []);
+
+  return targets;
+}

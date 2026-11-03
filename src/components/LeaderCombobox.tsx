@@ -21,14 +21,16 @@ const EMPTY: Leader[] = [];
 
 type ComboboxProps = Omit<
   ComponentProps<typeof ComboboxInput>,
-  'value' | 'defaultValue' | 'onChange'
+  'value' | 'defaultValue' | 'onChange' | 'showClear'
 > & {
   value: string;
+  showClear?: boolean;
   onValueChange: (nip: string) => void;
 };
 
 export default function LeaderCombobox({
   value,
+  showClear = true,
   onValueChange,
   ...inputProps
 }: ComboboxProps) {
@@ -54,7 +56,7 @@ export default function LeaderCombobox({
     >
       <ComboboxInput
         {...inputProps}
-        showClear
+        showClear={showClear}
         placeholder="Cari nama, NIP, job, atau section"
       />
       <ComboboxContent>

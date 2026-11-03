@@ -36,6 +36,7 @@ export type Problem = {
 };
 
 export type Target = {
+  createdAt: string;
   date: string;
   line: string;
   shift: Shift;
@@ -48,6 +49,7 @@ export type Target = {
   leader: Leader['nip'];
   operators: Operator['nip'][];
   target: number;
+  rowNumber: number;
 };
 
 export type StyleGroup = Record<string, Style>;
@@ -59,7 +61,10 @@ export type Style = {
   parts: Record<string, string>;
 };
 
-export type TargetFormData = Omit<Target, 'date' | 'manPower'>;
+export type TargetFormData = Omit<
+  Target,
+  'createdAt' | 'date' | 'manPower' | 'rowNumber'
+>;
 
 export type OutputFormData = {
   line: string;
@@ -87,12 +92,40 @@ export type UpdateProblemData = {
   action: ProblemAction;
 };
 
+export type TargetEditableField =
+  | 'line'
+  | 'shift'
+  | 'spo'
+  | 'prcs'
+  | 'workingHour'
+  | 'leader'
+  | 'operators'
+  | 'target';
+
+export type TargetCellChange = {
+  rowNumber: number;
+  field: TargetEditableField;
+  /**
+   * `string[]` untuk kolom PRC dan operator. Nilai tetap dikirim sebagai
+   * data sederhana karena melewati google.script.run.
+   */
+  value: string | number | string[];
+};
+
+export type UpdateTargetData = {
+  changes: TargetCellChange[];
+};
+
 export type GasFunctions = {
   getLines: () => LineGroup[];
   getMembers: () => { leaders: Leader[]; operators: Operator[] };
   getStyles: () => StyleGroup;
   getSizes: () => SizeGroup;
   getProblems: () => Problem[];
+  getTargets: () => Target[];
+  updateTarget: (
+    data: UpdateTargetData,
+  ) => { updated: number } | Promise<{ updated: number }>;
   addTarget: (formData: TargetFormData) => void;
   addOutput: (formData: OutputFormData) => void;
   addProblem: (formData: ProblemFormData) => void;

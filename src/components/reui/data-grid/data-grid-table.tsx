@@ -1289,7 +1289,6 @@ function DataGridTableHead({ children }: { children: ReactNode }) {
 
 function DataGridTableHeadRow({
   children,
-  rowId,
 }: {
   children: ReactNode;
   rowId: string;
@@ -1974,7 +1973,7 @@ function DataGridTableFootRowCell({
 }
 
 function DataGridTableBodyRowSkeleton({ children }: { children: ReactNode }) {
-  const { table, props } = useDataGrid();
+  const { props } = useDataGrid();
 
   return (
     <tr
@@ -2911,7 +2910,7 @@ const MemoizedDataGridTableBodyRows = memo(
     next.table._isSelectingCells === true,
 ) as typeof DataGridTableBodyRows;
 
-function DataGridTableHeader<TData extends object>() {
+function DataGridTableHeader() {
   const { table, props } = useDataGrid();
   const mergedHeaderGroups = getDataGridTableMergedHeaderGroups(table);
   const hasRightPinnedColumns = hasDataGridTableRightPinnedColumns(table);
@@ -2971,7 +2970,7 @@ function DataGridTableHeader<TData extends object>() {
   );
 }
 
-function DataGridTable<TData extends object>({
+function DataGridTable({
   footerContent,
   renderHeader = true,
 }: {

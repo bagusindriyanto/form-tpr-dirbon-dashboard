@@ -29,7 +29,7 @@ type Virtualizer = ReturnType<typeof useVirtualizer<HTMLDivElement, Element>>;
 
 type ComboboxProps = Omit<
   ComponentProps<typeof ComboboxInput>,
-  'value' | 'defaultValue' | 'onChange'
+  'value' | 'defaultValue' | 'onChange' | 'showClear' | 'showTrigger'
 > & {
   items: readonly string[];
   value: string;
@@ -37,6 +37,8 @@ type ComboboxProps = Omit<
   isError?: boolean;
   isRefreshing?: boolean;
   onRefresh?: () => void;
+  showClear?: boolean;
+  showTrigger?: boolean;
   onValueChange: (name: string) => void;
 };
 
@@ -47,6 +49,8 @@ export default function FormCombobox({
   isError = false,
   isRefreshing = false,
   onRefresh,
+  showClear = true,
+  showTrigger = false,
   onValueChange,
   ...inputProps
 }: ComboboxProps) {
@@ -71,7 +75,11 @@ export default function FormCombobox({
         });
       }}
     >
-      <ComboboxInput {...inputProps} showClear showTrigger={false}>
+      <ComboboxInput
+        {...inputProps}
+        showClear={showClear}
+        showTrigger={showTrigger}
+      >
         {onRefresh && !value && (
           <InputGroupAddon align="inline-end" className="order-0 pr-0">
             <InputGroupButton

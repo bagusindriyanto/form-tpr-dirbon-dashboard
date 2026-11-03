@@ -384,7 +384,7 @@ class DataGridKeyboardSensor extends KeyboardSensor {
   }
 }
 
-function DataGridTableDnd<TData extends object>({
+function DataGridTableDnd({
   handleDragEnd,
   footerContent,
   accessibility,

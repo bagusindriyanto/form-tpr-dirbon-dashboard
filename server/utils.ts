@@ -28,6 +28,13 @@ function toString(value: CellValue): string {
   return result.trim();
 }
 
+function splitCellList(value: CellValue): string[] {
+  return toString(value)
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 function toDate(value: CellValue): Date {
   if (!(value instanceof Date)) {
     throw new Error('Nilai sel harus berupa tanggal');
