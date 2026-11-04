@@ -1,6 +1,6 @@
 const SPREADSHEET_CONFIG = {
   database: {
-    spreadsheetId: '1AtRp3wCRilR-WYhpbL7MC2-thMHI2O-plKObyQB0p7A',
+    spreadsheetId: '1zDjzPMYHqOkwnZ0EkQ1ovEzZOX51OBoiafNFm7ov_Mg',
     sheetNames: {
       member: 'Operator',
       target: 'Target',
@@ -8,7 +8,7 @@ const SPREADSHEET_CONFIG = {
     },
   },
   lkh: {
-    spreadsheetId: '1Z5k7RuMQa-zlJr8dk2eUQ5NlVlpkDJCtMAk5HPoJeJE',
+    spreadsheetId: '10wBmTIk7b81l_3ed-RFnuqMbnSXcGUqKIiOV0K_S87I',
     sheetNames: {
       dirbon: '[Trial] OUTPUT DIRBON/JAM',
       tpr: '[Trial] Output TPR/Jam',
@@ -22,7 +22,7 @@ const SPREADSHEET_CONFIG = {
     },
   },
   tprDirbon: {
-    spreadsheetId: '1ky7rSxy20KQJ3zcZw0mVY4qE48G6CKAjAbb3zybEmKk',
+    spreadsheetId: '1t7IGaII6O-uvGXXZImQE8gxnXgXq2i0flef4YPuLxo8',
     sheetNames: {
       kanban: 'Kanban',
     },

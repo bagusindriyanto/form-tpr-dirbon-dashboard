@@ -50,7 +50,13 @@ import { useGetLines } from '@/api/getLines';
 import { useGetOperators } from '@/api/getOperators';
 import { useGetStyles } from '@/api/getStyles';
 import { useGetTargets } from '@/api/getTargets';
+import { TARGETS_QUERY_KEY } from '@/api/queryKeys';
 import { useUpdateTarget } from '@/api/updateTarget';
+import {
+  applyTargetChanges,
+  mergeTargetChanges,
+  toTargetList,
+} from '@/lib/targetChanges';
 import { cn } from '@/lib/utils';
 import type { Leader } from '@/types/leader';
 import type { LineGroup } from '@/types/line';
@@ -60,6 +66,7 @@ import type {
   TargetCellChange,
   TargetEditableField,
 } from '@/types/target';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   type ColumnDef,
   type ColumnPinningState,
@@ -67,7 +74,7 @@ import {
   type SortingState,
   useTable,
 } from '@tanstack/react-table';
-import { RefreshCwIcon } from 'lucide-react';
+import { RefreshCwIcon, SaveIcon, Undo2Icon } from 'lucide-react';
 import { toast } from 'sonner';
 import FormCombobox from './FormCombobox';
 import LeaderCombobox from './LeaderCombobox';
@@ -93,10 +100,13 @@ function LineCell({
   onChange: (next: string) => void;
 }) {
   return (
-    <Select value={value || null} onValueChange={(next) => onChange(next ?? '')}>
+    <Select
+      value={value || null}
+      onValueChange={(next) => onChange(next ?? '')}
+    >
       <SelectTrigger
         size="sm"
-        className="h-6 w-full border-0 bg-transparent px-1 shadow-none [&_svg]:opacity-0 [&_svg]:transition-opacity in-data-[cell-focused]:[&_svg]:opacity-100"
+        className="h-6 w-full border-0 bg-transparent px-1 shadow-none [&_svg]:opacity-0 [&_svg]:transition-opacity in-data-cell-focused:[&_svg]:opacity-100"
         aria-label="Line"
       >
         <SelectValue>{value}</SelectValue>
@@ -141,8 +151,10 @@ function ShiftCell({
         </SelectValue>
       </SelectTrigger>
       <SelectContent alignItemWithTrigger={false} align="start" sideOffset={8}>
-        <SelectItem value="1">Shift 1</SelectItem>
-        <SelectItem value="2">Shift 2</SelectItem>
+        <SelectGroup>
+          <SelectItem value="1">Shift 1</SelectItem>
+          <SelectItem value="2">Shift 2</SelectItem>
+        </SelectGroup>
       </SelectContent>
     </Select>
   );
@@ -245,11 +257,14 @@ function PrcCell({
           )}
         </ComboboxValue>
       </ComboboxChips>
-      <ComboboxContent anchor={anchor} align="start" sideOffset={8} className="w-56">
+      <ComboboxContent
+        anchor={anchor}
+        // align="start"
+        sideOffset={8}
+        // className="w-56"
+      >
         <ComboboxEmpty>
-          {options.length
-            ? 'Tidak ada PRC.'
-            : 'Pilih SPO terlebih dahulu.'}
+          {options.length ? 'Tidak ada PRC.' : 'Pilih SPO terlebih dahulu.'}
         </ComboboxEmpty>
         <ComboboxList>
           {(prc: string) => (
@@ -266,6 +281,8 @@ function PrcCell({
 export default function TargetDataGrid() {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const gridApiRef = useRef<DataGridCellSelectionApi | null>(null);
+  const saveLockRef = useRef(false);
+  const queryClient = useQueryClient();
 
   const {
     data: targets = [],
@@ -278,17 +295,23 @@ export default function TargetDataGrid() {
   const { data: lineGroups = EMPTY_LINES } = useGetLines();
   const { data: leaders = EMPTY_LEADERS } = useGetLeaders();
   const { data: operatorGroups = [] } = useGetOperators();
-  const { mutate: saveTargets, isPending: isSaving } = useUpdateTarget();
+  const { mutateAsync: saveTargets, isPending: isSaving } = useUpdateTarget();
 
+  const [pendingChanges, setPendingChanges] = useState<TargetCellChange[]>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnPinning, setColumnPinning] = useState<ColumnPinningState>({
-    start: ['date'],
+    start: ['date', 'line'],
     end: ['target'],
   });
+
+  const rows = useMemo(
+    () => applyTargetChanges(targets, pendingChanges, styleGroup),
+    [pendingChanges, styleGroup, targets],
+  );
 
   const operators = useMemo(
     () => operatorGroups.flatMap((group) => group.items),
@@ -328,24 +351,55 @@ export default function TargetDataGrid() {
     return map;
   }, [operators]);
 
-  const commitChanges = useCallback(
-    (changes: TargetCellChange[]) => {
-      if (!changes.length) return;
-      saveTargets({ changes });
-    },
-    [saveTargets],
-  );
+  const stageChanges = useCallback((changes: TargetCellChange[]) => {
+    if (!changes.length) return;
+    setPendingChanges((current) => mergeTargetChanges(current, changes));
+  }, []);
 
-  const commitField = useCallback(
+  const stageField = useCallback(
     (
       rowNumber: number,
       field: TargetEditableField,
       value: string | number | string[],
     ) => {
-      commitChanges([{ rowNumber, field, value }]);
+      stageChanges([{ rowNumber, field, value }]);
     },
-    [commitChanges],
+    [stageChanges],
   );
+
+  const handleDiscard = useCallback(() => {
+    if (isSaving) return;
+    setPendingChanges([]);
+  }, [isSaving]);
+
+  const handleSave = useCallback(async () => {
+    if (!pendingChanges.length || isSaving || saveLockRef.current) return;
+
+    saveLockRef.current = true;
+    const changes = pendingChanges;
+
+    try {
+      await saveTargets({ changes });
+
+      queryClient.setQueryData<Target[]>(TARGETS_QUERY_KEY, (current) =>
+        current ? applyTargetChanges(current, changes, styleGroup) : current,
+      );
+
+      // Hanya hapus perubahan yang ikut tersimpan. Editan yang masuk saat
+      // proses simpan berjalan tetap menunggu di antrean.
+      const saved = new Set(changes);
+      setPendingChanges((current) =>
+        current.filter((change) => !saved.has(change)),
+      );
+
+      toast.success(`${changes.length} perubahan target disimpan`);
+      void queryClient.invalidateQueries({ queryKey: TARGETS_QUERY_KEY });
+    } catch {
+      // Pesan error sudah ditampilkan oleh useUpdateTarget.
+    } finally {
+      saveLockRef.current = false;
+    }
+  }, [isSaving, pendingChanges, queryClient, saveTargets, styleGroup]);
 
   const changeSpo = useCallback(
     (target: Target, spo: string) => {
@@ -361,7 +415,7 @@ export default function TargetDataGrid() {
       const prcs = target.prcs.filter((prc) => style.parts[prc]);
       const dropped = target.prcs.length - prcs.length;
 
-      commitChanges([
+      stageChanges([
         { rowNumber: target.rowNumber, field: 'spo', value: spo },
         { rowNumber: target.rowNumber, field: 'prcs', value: prcs },
       ]);
@@ -372,16 +426,12 @@ export default function TargetDataGrid() {
         });
       }
     },
-    [commitChanges, styleGroup],
+    [stageChanges, styleGroup],
   );
 
-  const handleCellsChange = (
-    details: DataGridCellsChangeDetails<Target>,
-  ) => {
+  const handleCellsChange = (details: DataGridCellsChangeDetails<Target>) => {
     if (details.rejected.length) {
-      toast.error(
-        `${details.rejected.length} nilai tidak bisa diterapkan`,
-      );
+      toast.error(`${details.rejected.length} nilai tidak bisa diterapkan`);
     }
     if (!details.changes.length) return;
 
@@ -393,12 +443,23 @@ export default function TargetDataGrid() {
       return;
     }
 
+    const spoRows = new Set<number>();
+    const prcsByRow = new Map<number, string[]>();
+
+    for (const change of details.changes) {
+      if (change.columnId === 'spo') {
+        spoRows.add(change.row.rowNumber);
+      }
+      if (change.columnId === 'prcs') {
+        prcsByRow.set(
+          change.row.rowNumber,
+          toTargetList(change.value as string | number | string[]),
+        );
+      }
+    }
+
     const changes: TargetCellChange[] = [];
-    const rowsWithExplicitPrc = new Set(
-      details.changes
-        .filter((change) => change.columnId === 'prcs')
-        .map((change) => change.row.rowNumber),
-    );
+    let droppedPrc = 0;
 
     for (const change of details.changes) {
       const rowNumber = change.row.rowNumber;
@@ -406,19 +467,17 @@ export default function TargetDataGrid() {
       if (change.columnId === 'spo') {
         const spo = String(change.value ?? '').trim();
         const style = styleGroup?.[spo];
-        const prcs = style
-          ? change.row.prcs.filter((prc) => style.parts[prc])
-          : [];
+        const source = prcsByRow.get(rowNumber) ?? change.row.prcs;
+        const prcs = style ? source.filter((prc) => style.parts[prc]) : [];
 
+        droppedPrc += source.length - prcs.length;
         changes.push({ rowNumber, field: 'spo', value: spo });
-
-        // Kalau baris yang sama juga membawa PRC baru (paste satu blok),
-        // jangan timpa dengan PRC lama yang sudah difilter.
-        if (!rowsWithExplicitPrc.has(rowNumber)) {
-          changes.push({ rowNumber, field: 'prcs', value: prcs });
-        }
+        changes.push({ rowNumber, field: 'prcs', value: prcs });
         continue;
       }
+
+      // PRC pada baris yang juga ganti SPO sudah difilter bersama SPO baru.
+      if (change.columnId === 'prcs' && spoRows.has(rowNumber)) continue;
 
       changes.push({
         rowNumber,
@@ -427,12 +486,16 @@ export default function TargetDataGrid() {
       });
     }
 
-    commitChanges(changes);
+    stageChanges(changes);
+
+    if (droppedPrc > 0) {
+      toast.info(`${droppedPrc} PRC dikosongkan`, {
+        description: 'PRC tersebut tidak tersedia untuk SPO baru.',
+      });
+    }
   };
 
-  const handleCellEditRequest = (
-    request: DataGridCellEditRequest<Target>,
-  ) => {
+  const handleCellEditRequest = (request: DataGridCellEditRequest<Target>) => {
     if (request.initialText !== undefined) return;
 
     const cellSelector = 'td[data-cell-focused]';
@@ -490,7 +553,7 @@ export default function TargetDataGrid() {
             value={row.original.line}
             groups={lineGroups}
             onChange={(next) =>
-              commitField(row.original.rowNumber, 'line', next)
+              stageField(row.original.rowNumber, 'line', next)
             }
           />
         ),
@@ -515,11 +578,11 @@ export default function TargetDataGrid() {
           <ShiftCell
             value={row.original.shift}
             onChange={(next) =>
-              commitField(row.original.rowNumber, 'shift', next)
+              stageField(row.original.rowNumber, 'shift', next)
             }
           />
         ),
-        size: 86,
+        size: 108,
         meta: {
           headerTitle: 'Shift',
           cellEdit: {
@@ -543,7 +606,7 @@ export default function TargetDataGrid() {
             onChange={(next) => changeSpo(row.original, next)}
           />
         ),
-        size: 150,
+        size: 125,
         meta: {
           headerTitle: 'SPO',
           cellEdit: {
@@ -561,12 +624,15 @@ export default function TargetDataGrid() {
           <DataGridColumnHeader title="Style" column={column} />
         ),
         cell: (info) => (
-          <span className="block truncate" title={String(info.getValue() ?? '')}>
+          <span
+            className="block truncate"
+            title={String(info.getValue() ?? '')}
+          >
             {String(info.getValue() ?? '')}
           </span>
         ),
         enableSorting: false,
-        size: 130,
+        size: 160,
         meta: {
           headerTitle: 'Style',
           cellClassName: 'text-muted-foreground',
@@ -583,7 +649,7 @@ export default function TargetDataGrid() {
             value={row.original.prcs}
             styleGroup={styleGroup}
             onChange={(next) =>
-              commitField(row.original.rowNumber, 'prcs', next)
+              stageField(row.original.rowNumber, 'prcs', next)
             }
           />
         ),
@@ -671,14 +737,14 @@ export default function TargetDataGrid() {
           <LeaderCombobox
             value={row.original.leader}
             onValueChange={(next) =>
-              commitField(row.original.rowNumber, 'leader', next)
+              stageField(row.original.rowNumber, 'leader', next)
             }
             showClear={false}
             data-cell-control=""
             className={CELL_CONTROL_CLASS}
           />
         ),
-        size: 150,
+        size: 170,
         meta: {
           headerTitle: 'Leader',
           cellEdit: {
@@ -701,7 +767,7 @@ export default function TargetDataGrid() {
             <OperatorCombobox
               value={row.original.operators}
               onValueChange={(next) =>
-                commitField(row.original.rowNumber, 'operators', next)
+                stageField(row.original.rowNumber, 'operators', next)
               }
               maxVisible={2}
               chipsClassName="min-h-6! w-full flex-nowrap overflow-hidden rounded-none! border-0! bg-transparent! p-0! shadow-none! focus-within:ring-0!"
@@ -759,7 +825,7 @@ export default function TargetDataGrid() {
     ],
     [
       changeSpo,
-      commitField,
+      stageField,
       leaderByNip,
       leaderByValue,
       lineGroups,
@@ -774,8 +840,8 @@ export default function TargetDataGrid() {
   const table = useTable({
     features: dataGridFeatures,
     columns,
-    data: targets,
-    pageCount: Math.ceil(targets.length / pagination.pageSize),
+    data: rows,
+    pageCount: Math.ceil(rows.length / pagination.pageSize),
     getRowId: (row: Target) => String(row.rowNumber),
     state: {
       pagination,
@@ -791,7 +857,7 @@ export default function TargetDataGrid() {
   return (
     <DataGrid
       table={table}
-      recordCount={targets.length}
+      recordCount={rows.length}
       isLoading={isPending}
       onCellsChange={handleCellsChange}
       onCellEditRequest={handleCellEditRequest}
@@ -825,20 +891,41 @@ export default function TargetDataGrid() {
               <Badge variant="info-light" className="text-xs">
                 Menyimpan…
               </Badge>
+            ) : pendingChanges.length ? (
+              <Badge variant="info-light" className="text-xs">
+                {pendingChanges.length} perubahan
+              </Badge>
             ) : null}
           </CardTitle>
-          <CardAction>
+          <CardAction className="flex items-center gap-2">
             <Button
               size="sm"
               variant="outline"
               onClick={() => refetch()}
-              disabled={isFetching}
+              disabled={isFetching || isSaving}
             >
               <RefreshCwIcon
                 className={cn(isFetching && 'animate-spin')}
                 data-icon="inline-start"
               />
               {isFetching ? 'Memuat...' : 'Refresh'}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleDiscard}
+              disabled={!pendingChanges.length || isSaving}
+            >
+              <Undo2Icon data-icon="inline-start" />
+              Batal
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={!pendingChanges.length || isSaving}
+            >
+              <SaveIcon data-icon="inline-start" />
+              {isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}
             </Button>
           </CardAction>
         </CardHeader>
