@@ -1,4 +1,4 @@
-function getShiftDate(shift: '1' | '2'): Date {
+function getShiftDate(shift: Shift): Date {
   const now = new Date();
   const date = new Date(now);
   date.setHours(0, 0, 0, 0);
@@ -7,9 +7,9 @@ function getShiftDate(shift: '1' | '2'): Date {
   const day = now.getDay();
   if (day === 0) {
     date.setDate(date.getDate() - 1);
-  } else if (day === 1 && shift === '2' && hour < 18) {
+  } else if (day === 1 && shift === '2' && hour < 19) {
     date.setDate(date.getDate() - 2);
-  } else if (shift === '2' && hour < 18) {
+  } else if (shift === '2' && hour < 19) {
     date.setDate(date.getDate() - 1);
   }
 
