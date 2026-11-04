@@ -83,3 +83,13 @@ function toDateString(value: CellValue): string {
 
   return String(value).trim();
 }
+
+function getShiftAt(value: Date): Shift {
+  const time = Utilities.formatDate(
+    value,
+    Session.getScriptTimeZone(),
+    'HH:mm',
+  );
+
+  return time >= '06:30' && time < '19:00' ? '1' : '2';
+}

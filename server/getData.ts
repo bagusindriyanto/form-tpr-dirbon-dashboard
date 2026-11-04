@@ -97,7 +97,7 @@ function getStyles(): ReturnType<GasFunctions['getStyles']> {
 
 function getSizesFromSheet(): SizeGroup {
   const {
-    chk10: { spreadsheetId, sheetNames },
+    database: { spreadsheetId, sheetNames },
   } = SPREADSHEET_CONFIG;
 
   const spreadsheet = SpreadsheetApp.openById(spreadsheetId);

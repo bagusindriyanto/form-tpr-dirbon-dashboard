@@ -5,6 +5,7 @@ const SPREADSHEET_CONFIG = {
       member: 'Operator',
       target: 'Target',
       output: 'Output',
+      spoAndSize: 'SPO dan Size',
     },
   },
   lkh: {
@@ -13,12 +14,6 @@ const SPREADSHEET_CONFIG = {
       dirbon: '[Trial] OUTPUT DIRBON/JAM',
       tpr: '[Trial] Output TPR/Jam',
       spoAndPrc: 'Daftar SPOPRC',
-    },
-  },
-  chk10: {
-    spreadsheetId: '1e7SrnbLRkfS5cMu3XoCrvb1yTzhI17onhQXknhw-e_0',
-    sheetNames: {
-      spoAndSize: 'SPO dan Size',
     },
   },
   tprDirbon: {

@@ -28,7 +28,7 @@ function addTarget(targetFormData: TargetFormData) {
     sheet.appendRow([
       createdAt,
       `=IF(
-        AND(D${nextRow}=2,HOUR(A${nextRow})<18),
+        AND(D${nextRow}=2,HOUR(A${nextRow})<19),
         IF(
           WEEKDAY(INT(A${nextRow}),2)=1,
           INT(A${nextRow})-2,
@@ -97,7 +97,7 @@ function addOutput(outputFormData: OutputFormData) {
     sheet.appendRow([
       createdAt,
       `=IF(
-        AND(D${nextRow}=2,HOUR(A${nextRow})<18),
+        AND(D${nextRow}=2,HOUR(A${nextRow})<19),
         IF(
           WEEKDAY(INT(A${nextRow}),2)=1,
           INT(A${nextRow})-2,
@@ -138,6 +138,7 @@ function addProblem(problemFormData: ProblemFormData) {
     if (!sheet) throw new Error(`Sheet '${sheetNames.kanban}' tidak ditemukan`);
 
     const createdAt = new Date();
+    const shift = getShiftAt(createdAt);
     const { line, problem, pic } = problemFormData;
 
     const lastRow = sheet.getLastRow();
@@ -154,6 +155,8 @@ function addProblem(problemFormData: ProblemFormData) {
       `=ROW()-1`,
       `=ISOWEEKNUM(G${nextRow})`,
       `=IFS(LEFT(B${nextRow},1)="D", "Dirbon", LEFT(B${nextRow},1)="T", "TPR")`,
+      null,
+      shift,
     ]);
   });
 }
