@@ -7,9 +7,9 @@ import {
 } from './ui/dialog';
 import { Button } from './ui/button';
 import { TablePropertiesIcon } from 'lucide-react';
-import TargetDataGrid from './TargetDataGrid';
+import EditContent from './EditContent';
 
-export default function TargetEditDialog() {
+export default function EditDialog() {
   return (
     <Dialog>
       <DialogTrigger
@@ -18,13 +18,13 @@ export default function TargetEditDialog() {
         }
       >
         <TablePropertiesIcon />
-        Edit Target
+        Edit Data
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[calc(100%-2rem)] lg:max-w-7xl">
+      <DialogContent className="sm:max-w-[calc(100%-2rem)] lg:max-w-7xl min-w-0">
         <DialogHeader>
-          <DialogTitle>Edit Target</DialogTitle>
+          <DialogTitle>Edit Data</DialogTitle>
         </DialogHeader>
-        <TargetDataGrid />
+        <EditContent />
       </DialogContent>
     </Dialog>
   );
