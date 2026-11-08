@@ -1,4 +1,3 @@
-import { createLine } from '@/mocks/line';
 import { createOperator } from '@/mocks/operator';
 import { createLeader } from '@/mocks/leader';
 import { createStyleGroup } from '@/mocks/style';
@@ -109,7 +108,6 @@ const applyMockChanges = (changes: TargetCellChange[]) => {
 };
 
 export const gasMock: GasFunctions = {
-  getLines: () => [createLine('TPR', 20), createLine('Dirbon', 5)],
   getMembers: () => mockMembers,
   getStyles: () => mockStyles,
   getSizes: () => createSizeGroup(7000),

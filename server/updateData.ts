@@ -228,12 +228,7 @@ function updateTarget({ changes }: UpdateTargetData): { updated: number } {
 
     for (const write of writes) {
       sheet
-        .getRange(
-          write.rowNumber,
-          TARGET_FIRST_COLUMN,
-          1,
-          TARGET_COLUMN_COUNT,
-        )
+        .getRange(write.rowNumber, TARGET_FIRST_COLUMN, 1, TARGET_COLUMN_COUNT)
         .setValues(write.values);
     }
 

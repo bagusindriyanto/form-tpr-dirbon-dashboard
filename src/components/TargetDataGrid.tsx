@@ -46,7 +46,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useGetLeaders } from '@/api/getLeaders';
-import { useGetLines } from '@/api/getLines';
 import { useGetOperators } from '@/api/getOperators';
 import { useGetStyles } from '@/api/getStyles';
 import { useGetTargets } from '@/api/getTargets';
@@ -55,6 +54,7 @@ import { useUpdateTarget } from '@/api/updateTarget';
 import {
   applyTargetChanges,
   mergeTargetChanges,
+  targetChangeKey,
   toTargetList,
 } from '@/lib/targetChanges';
 import { cn } from '@/lib/utils';
@@ -79,8 +79,8 @@ import { toast } from 'sonner';
 import FormCombobox from './FormCombobox';
 import LeaderCombobox from './LeaderCombobox';
 import OperatorCombobox from './OperatorCombobox';
+import { LINE_GROUPS } from '@/constants/lines';
 
-const EMPTY_LINES: LineGroup[] = [];
 const EMPTY_LEADERS: Leader[] = [];
 
 const CELL_CONTROL_CLASS =
@@ -292,7 +292,6 @@ export default function TargetDataGrid() {
     refetch,
   } = useGetTargets();
   const { data: styleGroup } = useGetStyles();
-  const { data: lineGroups = EMPTY_LINES } = useGetLines();
   const { data: leaders = EMPTY_LEADERS } = useGetLeaders();
   const { data: operatorGroups = [] } = useGetOperators();
   const { mutateAsync: saveTargets, isPending: isSaving } = useUpdateTarget();
@@ -313,6 +312,17 @@ export default function TargetDataGrid() {
     [pendingChanges, styleGroup, targets],
   );
 
+  // Penanda visual mengikuti antrean lokal, jadi baris dan sel yang belum
+  // disimpan langsung terlihat tanpa menunggu request ke server.
+  const dirtyRows = useMemo(
+    () => new Set(pendingChanges.map((change) => change.rowNumber)),
+    [pendingChanges],
+  );
+  const dirtyCells = useMemo(
+    () => new Set(pendingChanges.map(targetChangeKey)),
+    [pendingChanges],
+  );
+
   const operators = useMemo(
     () => operatorGroups.flatMap((group) => group.items),
     [operatorGroups],
@@ -321,10 +331,7 @@ export default function TargetDataGrid() {
     () => Object.keys(styleGroup ?? {}).sort(),
     [styleGroup],
   );
-  const lineOptions = useMemo(
-    () => lineGroups.flatMap((group) => group.items),
-    [lineGroups],
-  );
+  const lineOptions = LINE_GROUPS.flatMap((group) => group.items);
 
   const leaderByNip = useMemo(
     () => new Map(leaders.map((leader) => [leader.nip, leader])),
@@ -551,7 +558,7 @@ export default function TargetDataGrid() {
         cell: ({ row }) => (
           <LineCell
             value={row.original.line}
-            groups={lineGroups}
+            groups={LINE_GROUPS}
             onChange={(next) =>
               stageField(row.original.rowNumber, 'line', next)
             }
@@ -828,7 +835,6 @@ export default function TargetDataGrid() {
       stageField,
       leaderByNip,
       leaderByValue,
-      lineGroups,
       lineOptions,
       operatorByNip,
       operatorByValue,
@@ -869,6 +875,14 @@ export default function TargetDataGrid() {
           }`,
         );
       }}
+      getRowStatus={(row) =>
+        dirtyRows.has(row.rowNumber) ? 'dirty' : undefined
+      }
+      getCellStatus={(row, columnId) =>
+        dirtyCells.has(`${row.rowNumber}:${columnId}`)
+          ? 'dirty'
+          : undefined
+      }
       tableLayout={{
         dense: true,
         cellSelection: true,

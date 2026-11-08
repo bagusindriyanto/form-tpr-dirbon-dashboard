@@ -1,5 +1,6 @@
 import { fakerID_ID as faker } from '@faker-js/faker';
 import type { Problem, PIC } from '@/types/problem';
+import { DIRBON_LINES, TPR_LINES } from '@/constants/lines';
 
 const PICS: PIC[] = ['Produksi', 'MT', 'Trainer', 'QC'];
 
@@ -25,10 +26,10 @@ function formatDateTime(date: Date): string {
 
 function createLine(): string {
   if (faker.helpers.arrayElement(['TPR', 'Dirbon'] as const) === 'TPR') {
-    return `T${String(faker.number.int({ min: 1, max: 20 })).padStart(2, '0')}`;
+    return faker.helpers.arrayElement(TPR_LINES);
   }
 
-  return `D${String(faker.number.int({ min: 1, max: 5 })).padStart(2, '0')}`;
+  return faker.helpers.arrayElement(DIRBON_LINES);
 }
 
 export const createProblem = (

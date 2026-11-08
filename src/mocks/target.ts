@@ -2,6 +2,7 @@ import { fakerID_ID as faker } from '@faker-js/faker';
 import type { Leader, Operator } from '../../shared/contracts';
 import type { StyleGroup } from '@/types/style';
 import type { Shift, Target } from '@/types/target';
+import { DIRBON_LINES, TPR_LINES } from '@/constants/lines';
 
 function formatDate(date: Date): string {
   const pad = (value: number) => String(value).padStart(2, '0');
@@ -23,10 +24,10 @@ function comparePrc(a: string, b: string): number {
 
 function createLine(): string {
   if (faker.helpers.arrayElement(['TPR', 'Dirbon'] as const) === 'TPR') {
-    return `T${String(faker.number.int({ min: 1, max: 20 })).padStart(2, '0')}`;
+    return faker.helpers.arrayElement(TPR_LINES);
   }
 
-  return `D${String(faker.number.int({ min: 1, max: 5 })).padStart(2, '0')}`;
+  return faker.helpers.arrayElement(DIRBON_LINES);
 }
 
 export const createTargets = (

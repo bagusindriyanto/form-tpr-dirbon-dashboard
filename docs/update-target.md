@@ -365,7 +365,7 @@ Menghasilkan kunci unik per sel:
 
 Contoh: `2:spo`, `2:prcs`, `5:operators`.
 
-Dipakai oleh `mergeTargetChanges` agar satu sel hanya punya satu nilai terakhir.
+Dipakai oleh `mergeTargetChanges` agar satu sel hanya punya satu nilai terakhir, dan oleh `TargetDataGrid` untuk membentuk himpunan sel yang diberi penanda `dirty`.
 
 ### `toTargetList`
 
@@ -467,6 +467,8 @@ State/ref penting:
 | `styleGroup` | `StyleGroup \| undefined` | dari query | Preview style/parts dan filter PRC. |
 | `pendingChanges` | `TargetCellChange[]` | `[]` | Antrean perubahan lokal. |
 | `rows` | `Target[]` | hasil memo | `applyTargetChanges(targets, pendingChanges, styleGroup)`. |
+| `dirtyRows` | `Set<number>` | hasil memo | Kumpulan `rowNumber` yang punya perubahan lokal. |
+| `dirtyCells` | `Set<string>` | hasil memo | Kumpulan kunci `rowNumber:field` untuk penanda sudut sel. |
 | `isSaving` | `boolean` | `false` | Alias dari `isPending` mutation. |
 | `saveLockRef` | `boolean` | `false` | Mencegah double submit sebelum render berikutnya. |
 | `queryClient` | `QueryClient` | dari provider | Untuk `setQueryData` dan `invalidateQueries`. |
@@ -475,6 +477,38 @@ State/ref penting:
 | `columnPinning` | `ColumnPinningState` | `date` kiri, `target` kanan | State pin kolom. |
 
 Data grid memakai `rows`, bukan `targets`, sehingga perubahan lokal langsung terlihat tanpa request.
+
+#### Penanda perubahan (`dirty`)
+
+Grid memakai fitur bawaan ReUI, bukan CSS manual:
+
+```ts
+const dirtyRows = useMemo(
+  () => new Set(pendingChanges.map((change) => change.rowNumber)),
+  [pendingChanges],
+);
+const dirtyCells = useMemo(
+  () => new Set(pendingChanges.map(targetChangeKey)),
+  [pendingChanges],
+);
+
+<DataGrid
+  getRowStatus={(row) =>
+    dirtyRows.has(row.rowNumber) ? 'dirty' : undefined
+  }
+  getCellStatus={(row, columnId) =>
+    dirtyCells.has(`${row.rowNumber}:${columnId}`)
+      ? 'dirty'
+      : undefined
+  }
+/>
+```
+
+- `getRowStatus` memberi tint background amber tipis pada seluruh baris yang memiliki perubahan lokal, termasuk kolom yang di-pin.
+- `getCellStatus` memberi corner mark amber pada sel yang field-nya ada di `pendingChanges`.
+- Kolom turunan seperti `style`, `parts`, dan `manPower` tidak punya `TargetCellChange` sendiri; perubahannya tetap terlihat lewat tint baris.
+- Penanda mengikuti `pendingChanges`: hilang saat **Batal** atau setelah perubahan tersimpan, tetap ada saat simpan gagal, dan tetap muncul untuk edit baru yang masuk saat proses simpan.
+- Jika nilai sel dikembalikan ke nilai awal, sel masih ditandai sampai disimpan/dibatalkan karena penanda berbasis antrean, bukan perbandingan nilai dengan `targets`.
 
 #### `stageChanges`
 
@@ -1015,15 +1049,15 @@ stateDiagram-v2
 
 ### Tabel State
 
-| Tahap | `pendingChanges` | `isSaving` | Badge | Tombol Simpan/Batal | Sumber data grid |
-| --- | --- | --- | --- | --- | --- |
-| Bersih | `[]` | `false` | Tidak ada | Disabled | `targets` |
-| Ada perubahan | `n > 0` | `false` | `n perubahan` | Enabled | `rows = applyTargetChanges(...)` |
-| Menyimpan | `n > 0` (captured) | `true` | `Menyimpan…` | Disabled | `rows` |
-| Sukses tanpa edit baru | `[]` | `false` | Tidak ada | Disabled | Cache hasil `setQueryData` lalu refetch |
-| Sukses dengan edit baru | `m > 0` | `false` | `m perubahan` | Enabled | `rows` dengan pending baru |
-| Gagal | `n > 0` | `false` | `n perubahan` | Enabled | `rows` dengan pending tetap |
-| Batal | `[]` | `false` | Tidak ada | Disabled | `targets` |
+| Tahap | `pendingChanges` | `isSaving` | Badge | Tombol Simpan/Batal | Sumber data grid | Penanda dirty |
+| --- | --- | --- | --- | --- | --- | --- |
+| Bersih | `[]` | `false` | Tidak ada | Disabled | `targets` | Tidak ada |
+| Ada perubahan | `n > 0` | `false` | `n perubahan` | Enabled | `rows = applyTargetChanges(...)` | Tint baris + corner mark sel |
+| Menyimpan | `n > 0` (captured) | `true` | `Menyimpan…` | Disabled | `rows` | Tint baris + corner mark sel |
+| Sukses tanpa edit baru | `[]` | `false` | Tidak ada | Disabled | Cache hasil `setQueryData` lalu refetch | Tidak ada |
+| Sukses dengan edit baru | `m > 0` | `false` | `m perubahan` | Enabled | `rows` dengan pending baru | Tint baris + corner mark untuk pending baru |
+| Gagal | `n > 0` | `false` | `n perubahan` | Enabled | `rows` dengan pending tetap | Tint baris + corner mark sel |
+| Batal | `[]` | `false` | Tidak ada | Disabled | `targets` | Tidak ada |
 
 `isSaving` adalah alias dari `isPending` milik mutation React Query.
 
@@ -1036,6 +1070,7 @@ stateDiagram-v2
 5. `pendingChanges` berubah; `rows` dihitung ulang.
 6. Tidak ada request ke server.
 7. Badge jumlah perubahan muncul; tombol simpan/batal aktif.
+8. Baris diberi tint `dirty` dan sel yang berubah diberi corner mark.
 
 ### Skenario 2 — Paste/Fill Banyak Sel
 
@@ -1097,7 +1132,7 @@ Inilah alasan filter memakai identitas objek, bukan hanya kunci `rowNumber:field
 2. `handleDiscard` mengosongkan `pendingChanges`.
 3. `rows` kembali ke `targets`.
 4. Tidak ada request ke server.
-5. Badge hilang dan tombol simpan/batal disabled.
+5. Badge hilang, tint baris/corner mark hilang, dan tombol simpan/batal disabled.
 
 ### Skenario 8 — Refresh
 
@@ -1326,6 +1361,10 @@ Skenario runtime yang sudah diverifikasi:
 | `applyTargetChanges` | function | `src/lib/targetChanges.ts` |
 | `mergeTargetChanges` | function | `src/lib/targetChanges.ts` |
 | `TargetDataGrid` | component | `src/components/TargetDataGrid.tsx` |
+| `dirtyRows` | local state | `src/components/TargetDataGrid.tsx` |
+| `dirtyCells` | local state | `src/components/TargetDataGrid.tsx` |
+| `getRowStatus` | ReUI prop | `src/components/reui/data-grid/data-grid.tsx` |
+| `getCellStatus` | ReUI prop | `src/components/reui/data-grid/data-grid.tsx` |
 | `stageChanges` | local function | `src/components/TargetDataGrid.tsx` |
 | `stageField` | local function | `src/components/TargetDataGrid.tsx` |
 | `handleDiscard` | local function | `src/components/TargetDataGrid.tsx` |
