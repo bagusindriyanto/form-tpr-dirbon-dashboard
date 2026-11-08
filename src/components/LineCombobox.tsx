@@ -11,10 +11,8 @@ import {
   ComboboxList,
   ComboboxSeparator,
 } from '@/components/ui/combobox';
-import { useGetLines } from '@/api/getLines';
 import { Fragment, type ComponentProps } from 'react';
-
-const EMPTY: LineGroup[] = [];
+import { LINE_GROUPS } from '@/constants/lines';
 
 type ComboboxProps = Omit<
   ComponentProps<typeof ComboboxInput>,
@@ -29,25 +27,15 @@ export default function LineCombobox({
   onValueChange,
   ...inputProps
 }: ComboboxProps) {
-  const { data: groups = EMPTY, isPending, isError } = useGetLines();
-
   return (
     <Combobox
-      items={groups}
+      items={LINE_GROUPS}
       value={value || null}
       onValueChange={(line) => onValueChange(line ?? '')}
     >
       <ComboboxInput {...inputProps} showClear placeholder="Cari nama line" />
       <ComboboxContent>
-        <ComboboxEmpty>
-          {isPending ? (
-            <span className="shimmer">Memuat...</span>
-          ) : isError ? (
-            'Gagal memuat data line.'
-          ) : (
-            'Data tidak ditemukan.'
-          )}
-        </ComboboxEmpty>
+        <ComboboxEmpty>Data tidak ditemukan.</ComboboxEmpty>
 
         <ComboboxList className="scroll-fade-y">
           {(group: LineGroup, index: number) => (

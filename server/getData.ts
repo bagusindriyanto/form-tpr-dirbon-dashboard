@@ -1,19 +1,3 @@
-function getLines(): ReturnType<GasFunctions['getLines']> {
-  const tprLines = Array.from(
-    { length: 20 },
-    (_, i) => `T${String(i + 1).padStart(2, '0')}`,
-  );
-  const dirbonLines = Array.from(
-    { length: 5 },
-    (_, i) => `D${String(i + 1).padStart(2, '0')}`,
-  );
-
-  return [
-    { value: 'TPR', items: tprLines },
-    { value: 'Dirbon', items: dirbonLines },
-  ];
-}
-
 function getMembersFromSheet(): { leaders: Leader[]; operators: Operator[] } {
   const {
     database: { spreadsheetId, sheetNames },

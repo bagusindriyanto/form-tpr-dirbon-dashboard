@@ -1,4 +1,3 @@
-import { createLine } from '@/mocks/line';
 import { createOperator } from '@/mocks/operator';
 import { createLeader } from '@/mocks/leader';
 import { createStyleGroup } from '@/mocks/style';
@@ -7,7 +6,6 @@ import { createProblem } from '@/mocks/problem';
 import type { GasFunctions, Leader, Operator } from '../../shared/contracts';
 
 export const gasMock: GasFunctions = {
-  getLines: () => [createLine('TPR', 20), createLine('Dirbon', 5)],
   getMembers: () => {
     const leaders: Leader[] = [];
     const operators: Operator[] = [];

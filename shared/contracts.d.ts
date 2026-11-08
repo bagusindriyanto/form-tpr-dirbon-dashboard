@@ -88,7 +88,6 @@ export type UpdateProblemData = {
 };
 
 export type GasFunctions = {
-  getLines: () => LineGroup[];
   getMembers: () => { leaders: Leader[]; operators: Operator[] };
   getStyles: () => StyleGroup;
   getSizes: () => SizeGroup;
