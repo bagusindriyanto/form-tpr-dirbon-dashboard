@@ -20,6 +20,7 @@ function addTarget(targetFormData: TargetFormData) {
       operators,
       target,
     } = targetFormData;
+    const recordDate = getShiftDate(shift);
     const manPower = operators.length;
 
     const lastRow = sheet.getLastRow();
@@ -27,19 +28,7 @@ function addTarget(targetFormData: TargetFormData) {
 
     sheet.appendRow([
       createdAt,
-      `=IF(
-        AND(D${nextRow}=2,HOUR(A${nextRow})<19),
-        IF(
-          WEEKDAY(INT(A${nextRow}),2)=1,
-          INT(A${nextRow})-2,
-          INT(A${nextRow})-1
-        ),
-        IF(
-          AND(D${nextRow}=2,WEEKDAY(INT(A${nextRow}),2)=7),
-          INT(A${nextRow})-1,
-          INT(A${nextRow})
-        )
-      )`,
+      recordDate,
       line,
       shift,
       spo,
@@ -96,19 +85,7 @@ function addOutput(outputFormData: OutputFormData) {
 
     sheet.appendRow([
       createdAt,
-      `=IF(
-        AND(D${nextRow}=2,HOUR(A${nextRow})<19),
-        IF(
-          WEEKDAY(INT(A${nextRow}),2)=1,
-          INT(A${nextRow})-2,
-          INT(A${nextRow})-1
-        ),
-        IF(
-          AND(D${nextRow}=2,WEEKDAY(INT(A${nextRow}),2)=7),
-          INT(A${nextRow})-1,
-          INT(A${nextRow})
-        )
-      )`,
+      recordDate,
       line,
       shift,
       type,
@@ -138,11 +115,15 @@ function addProblem(problemFormData: ProblemFormData) {
     if (!sheet) throw new Error(`Sheet '${sheetNames.kanban}' tidak ditemukan`);
 
     const createdAt = new Date();
-    const shift = getShiftAt(createdAt);
     const { line, problem, pic } = problemFormData;
-
-    const lastRow = sheet.getLastRow();
-    const nextRow = lastRow + 1;
+    const shift = getShiftByTimestamp(createdAt);
+    const recordDate = getShiftDate(shift);
+    const week = getISOWeek(createdAt);
+    const section = line.startsWith('T')
+      ? 'TPR'
+      : line.startsWith('D')
+        ? 'Dirbon'
+        : 'Unknown';
 
     sheet.appendRow([
       createdAt,
@@ -151,10 +132,10 @@ function addProblem(problemFormData: ProblemFormData) {
       pic,
       null,
       null,
-      `=TEXT(DATEVALUE(A${nextRow}), "yyyy-mm-dd")`,
+      recordDate,
       `=ROW()-1`,
-      `=ISOWEEKNUM(G${nextRow})`,
-      `=IFS(LEFT(B${nextRow},1)="D", "Dirbon", LEFT(B${nextRow},1)="T", "TPR")`,
+      week,
+      section,
       null,
       shift,
     ]);

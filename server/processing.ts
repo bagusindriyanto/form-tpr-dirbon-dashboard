@@ -1,35 +1,3 @@
-function getShiftDate(shift: Shift): Date {
-  const now = new Date();
-  const date = new Date(now);
-  date.setHours(0, 0, 0, 0);
-
-  const hour = now.getHours();
-  const day = now.getDay();
-  if (day === 0) {
-    date.setDate(date.getDate() - 1);
-  } else if (day === 1 && shift === '2' && hour < 19) {
-    date.setDate(date.getDate() - 2);
-  } else if (shift === '2' && hour < 19) {
-    date.setDate(date.getDate() - 1);
-  }
-
-  return date;
-}
-
-function getISOWeek(date: Date): number {
-  const d = new Date(
-    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
-  );
-
-  const dayNum = d.getUTCDay() || 7;
-
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-
-  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
-}
-
 function getTarget(
   { line, shift, spo, prcs }: OutputKey,
   recordDate: Date,
