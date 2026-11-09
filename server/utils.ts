@@ -132,3 +132,11 @@ function getShiftByTimestamp(timestamp: Date): Shift {
 
   return currentMinute >= lowerLimit && currentMinute < upperLimit ? '1' : '2';
 }
+
+function parseDateTimeString(value: string): Date {
+  return Utilities.parseDate(
+    value,
+    Session.getScriptTimeZone(),
+    DATE_TIME_FORMAT,
+  );
+}

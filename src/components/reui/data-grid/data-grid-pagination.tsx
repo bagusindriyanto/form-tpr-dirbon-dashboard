@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -209,11 +210,13 @@ function DataGridPagination(props: DataGridPaginationProps): JSX.Element {
                 alignItemWithTrigger={false}
                 className="min-w-(--anchor-width)"
               >
-                {mergedProps.sizes?.map((size: number) => (
-                  <SelectItem key={size} value={`${size}`}>
-                    {size}
-                  </SelectItem>
-                ))}
+                <SelectGroup>
+                  {mergedProps.sizes?.map((size: number) => (
+                    <SelectItem key={size} value={`${size}`}>
+                      {size}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
               </SelectContent>
             </Select>
           </>

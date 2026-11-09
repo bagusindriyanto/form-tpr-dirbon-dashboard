@@ -157,16 +157,17 @@ function getTargets(): ReturnType<GasFunctions['getTargets']> {
 
   const [, ...data]: CellValue[][] = sheet.getDataRange().getValues();
   const targets = data.reduce<Target[]>((result, row) => {
+    const createdAt = toDateTimeString(row[0]);
     const line = toString(row[2]);
     const spo = toString(row[4]);
     const target = toNumber(row[12]);
 
     // Kolom B dan N berisi formula, jadi getDataRange ikut membaca baris
     // kosong di bawah data. Baris tanpa isi tidak perlu ditampilkan di grid.
-    if (!line && !spo && !target) return result;
+    if (!createdAt || !line || !spo || !target) return result;
 
     result.push({
-      createdAt: toDateTimeString(row[0]),
+      createdAt,
       date: toDateString(row[1]),
       line,
       shift: toString(row[3]) as Shift,
@@ -185,5 +186,9 @@ function getTargets(): ReturnType<GasFunctions['getTargets']> {
     return result;
   }, []);
 
-  return targets;
+  return targets.sort(
+    (a, b) =>
+      parseDateTimeString(b.createdAt).getTime() -
+      parseDateTimeString(a.createdAt).getTime(),
+  );
 }

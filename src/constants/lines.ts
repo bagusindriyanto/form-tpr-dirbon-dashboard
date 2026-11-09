@@ -13,3 +13,5 @@ export const LINE_GROUPS = [
   { value: 'TPR', items: TPR_LINES },
   { value: 'Dirbon', items: DIRBON_LINES },
 ] as const satisfies LineGroup[];
+
+export const LINE_OPTIONS = LINE_GROUPS.flatMap((group) => group.items);

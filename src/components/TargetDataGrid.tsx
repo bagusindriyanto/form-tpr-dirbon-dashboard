@@ -29,10 +29,15 @@ import {
   ComboboxChip,
   ComboboxChips,
   ComboboxChipsInput,
+  ComboboxCollection,
   ComboboxContent,
   ComboboxEmpty,
+  ComboboxGroup,
+  ComboboxInput,
   ComboboxItem,
+  ComboboxLabel,
   ComboboxList,
+  ComboboxSeparator,
   ComboboxValue,
   useComboboxAnchor,
 } from '@/components/ui/combobox';
@@ -79,12 +84,14 @@ import { toast } from 'sonner';
 import FormCombobox from './FormCombobox';
 import LeaderCombobox from './LeaderCombobox';
 import OperatorCombobox from './OperatorCombobox';
-import { LINE_GROUPS } from '@/constants/lines';
+import { LINE_GROUPS, LINE_OPTIONS } from '@/constants/lines';
+import type { OperatorGroup } from '@/types/operator';
 
 const EMPTY_LEADERS: Leader[] = [];
+const EMPTY_OPERATORS: OperatorGroup[] = [];
 
 const CELL_CONTROL_CLASS =
-  'h-6! min-h-6! w-full rounded-none! border-0! bg-transparent! px-0! py-0! shadow-none! ring-0! outline-hidden! focus-within:ring-0! has-[[data-slot=input-group-control]:focus-visible]:border-transparent! has-[[data-slot=input-group-control]:focus-visible]:ring-0!';
+  'h-6! min-h-6! w-full rounded-none! border-0! bg-transparent! p-0! shadow-none! ring-0! outline-hidden! focus-within:ring-0! has-[[data-slot=input-group-control]:focus-visible]:border-transparent! has-[[data-slot=input-group-control]:focus-visible]:ring-0!';
 
 function comparePrc(a: string, b: string) {
   return a.localeCompare(b, undefined, { numeric: true });
@@ -92,38 +99,42 @@ function comparePrc(a: string, b: string) {
 
 function LineCell({
   value,
-  groups,
   onChange,
 }: {
   value: string;
-  groups: LineGroup[];
   onChange: (next: string) => void;
 }) {
   return (
-    <Select
+    <Combobox
+      items={LINE_GROUPS}
       value={value || null}
-      onValueChange={(next) => onChange(next ?? '')}
+      onValueChange={(next) => {
+        if (next) onChange(next);
+      }}
     >
-      <SelectTrigger
-        size="sm"
-        className="h-6 w-full border-0 bg-transparent px-1 shadow-none [&_svg]:opacity-0 [&_svg]:transition-opacity in-data-cell-focused:[&_svg]:opacity-100"
-        aria-label="Line"
-      >
-        <SelectValue>{value}</SelectValue>
-      </SelectTrigger>
-      <SelectContent alignItemWithTrigger={false} align="start" sideOffset={8}>
-        {groups.map((group) => (
-          <SelectGroup key={group.value}>
-            <SelectLabel>{group.value}</SelectLabel>
-            {group.items.map((item) => (
-              <SelectItem key={item} value={item}>
-                {item}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        ))}
-      </SelectContent>
-    </Select>
+      <ComboboxInput placeholder="Cari line" className={CELL_CONTROL_CLASS} />
+      <ComboboxContent>
+        <ComboboxEmpty>Data tidak ditemukan.</ComboboxEmpty>
+
+        <ComboboxList className="scroll-fade-y">
+          {(group: LineGroup, index: number) => (
+            <Fragment key={group.value}>
+              {index > 0 && <ComboboxSeparator />}
+              <ComboboxGroup items={group.items}>
+                <ComboboxLabel>{group.value}</ComboboxLabel>
+                <ComboboxCollection>
+                  {(line: string) => (
+                    <ComboboxItem key={line} value={line}>
+                      {line}
+                    </ComboboxItem>
+                  )}
+                </ComboboxCollection>
+              </ComboboxGroup>
+            </Fragment>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   );
 }
 
@@ -152,6 +163,7 @@ function ShiftCell({
       </SelectTrigger>
       <SelectContent alignItemWithTrigger={false} align="start" sideOffset={8}>
         <SelectGroup>
+          <SelectLabel>Shift</SelectLabel>
           <SelectItem value="1">Shift 1</SelectItem>
           <SelectItem value="2">Shift 2</SelectItem>
         </SelectGroup>
@@ -173,7 +185,13 @@ function SpoCell({
     <FormCombobox
       items={options}
       value={value}
-      onValueChange={onChange}
+      onValueChange={(next) => {
+        if (!next) {
+          toast.error('Pilih satu SPO');
+          return;
+        }
+        onChange(next);
+      }}
       showClear={false}
       showTrigger
       data-cell-control=""
@@ -217,32 +235,14 @@ function PrcCell({
       <ComboboxChips
         ref={anchor}
         data-cell-control=""
-        className="min-h-6! w-full flex-nowrap overflow-hidden rounded-none! border-0! bg-transparent! p-0! shadow-none! ring-0! outline-hidden!"
+        className="min-h-6! w-full rounded-none! border-0! bg-transparent! p-0! shadow-none! ring-0! outline-hidden!"
       >
         <ComboboxValue>
           {(items: string[]) => (
             <Fragment>
-              {items.slice(0, 2).map((prc) => (
-                <ComboboxChip
-                  key={prc}
-                  showRemove={false}
-                  className="rounded-none! border-0! bg-transparent! p-0!"
-                >
-                  <Badge variant="outline" size="sm">
-                    {prc}
-                  </Badge>
-                </ComboboxChip>
+              {items.map((prc) => (
+                <ComboboxChip key={prc}>{prc}</ComboboxChip>
               ))}
-              {items.length > 2 && (
-                <ComboboxChip
-                  showRemove={false}
-                  className="rounded-none! border-0! bg-transparent! p-0!"
-                >
-                  <Badge variant="outline" size="sm">
-                    +{items.length - 2}
-                  </Badge>
-                </ComboboxChip>
-              )}
               <ComboboxChipsInput
                 placeholder={
                   items.length ? '' : options.length ? 'Pilih PRC' : 'Pilih SPO'
@@ -260,7 +260,7 @@ function PrcCell({
       <ComboboxContent
         anchor={anchor}
         // align="start"
-        sideOffset={8}
+        // sideOffset={8}
         // className="w-56"
       >
         <ComboboxEmpty>
@@ -293,10 +293,11 @@ export default function TargetDataGrid() {
   } = useGetTargets();
   const { data: styleGroup } = useGetStyles();
   const { data: leaders = EMPTY_LEADERS } = useGetLeaders();
-  const { data: operatorGroups = [] } = useGetOperators();
+  const { data: operatorGroups = EMPTY_OPERATORS } = useGetOperators();
   const { mutateAsync: saveTargets, isPending: isSaving } = useUpdateTarget();
 
   const [pendingChanges, setPendingChanges] = useState<TargetCellChange[]>([]);
+
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -331,7 +332,6 @@ export default function TargetDataGrid() {
     () => Object.keys(styleGroup ?? {}).sort(),
     [styleGroup],
   );
-  const lineOptions = LINE_GROUPS.flatMap((group) => group.items);
 
   const leaderByNip = useMemo(
     () => new Map(leaders.map((leader) => [leader.nip, leader])),
@@ -558,19 +558,18 @@ export default function TargetDataGrid() {
         cell: ({ row }) => (
           <LineCell
             value={row.original.line}
-            groups={LINE_GROUPS}
             onChange={(next) =>
               stageField(row.original.rowNumber, 'line', next)
             }
           />
         ),
-        size: 84,
+        size: 88,
         meta: {
           headerTitle: 'Line',
           cellEdit: {
             parse: (raw) => {
               const value = raw.trim();
-              return lineOptions.includes(value) ? value : undefined;
+              return LINE_OPTIONS.includes(value) ? value : undefined;
             },
             format: (value) => String(value ?? ''),
           },
@@ -613,7 +612,7 @@ export default function TargetDataGrid() {
             onChange={(next) => changeSpo(row.original, next)}
           />
         ),
-        size: 125,
+        size: 135,
         meta: {
           headerTitle: 'SPO',
           cellEdit: {
@@ -639,7 +638,7 @@ export default function TargetDataGrid() {
           </span>
         ),
         enableSorting: false,
-        size: 160,
+        size: 170,
         meta: {
           headerTitle: 'Style',
           cellClassName: 'text-muted-foreground',
@@ -661,7 +660,7 @@ export default function TargetDataGrid() {
           />
         ),
         enableSorting: false,
-        size: 138,
+        size: 165,
         meta: {
           headerTitle: 'PRC',
           cellEdit: {
@@ -707,7 +706,7 @@ export default function TargetDataGrid() {
         size: 54,
         meta: {
           headerTitle: 'MP',
-          cellClassName: 'text-end tabular-nums',
+          cellClassName: 'text-end tabular-nums text-muted-foreground',
           headerClassName: 'justify-end',
         },
       },
@@ -776,8 +775,7 @@ export default function TargetDataGrid() {
               onValueChange={(next) =>
                 stageField(row.original.rowNumber, 'operators', next)
               }
-              maxVisible={2}
-              chipsClassName="min-h-6! w-full flex-nowrap overflow-hidden rounded-none! border-0! bg-transparent! p-0! shadow-none! focus-within:ring-0!"
+              chipsClassName="min-h-6! w-full rounded-none! border-0! bg-transparent! p-0! shadow-none! focus-within:ring-0!"
             />
           </div>
         ),
@@ -835,7 +833,6 @@ export default function TargetDataGrid() {
       stageField,
       leaderByNip,
       leaderByValue,
-      lineOptions,
       operatorByNip,
       operatorByValue,
       spoOptions,
@@ -879,9 +876,7 @@ export default function TargetDataGrid() {
         dirtyRows.has(row.rowNumber) ? 'dirty' : undefined
       }
       getCellStatus={(row, columnId) =>
-        dirtyCells.has(`${row.rowNumber}:${columnId}`)
-          ? 'dirty'
-          : undefined
+        dirtyCells.has(`${row.rowNumber}:${columnId}`) ? 'dirty' : undefined
       }
       tableLayout={{
         dense: true,
@@ -897,8 +892,8 @@ export default function TargetDataGrid() {
           'first:ps-4 last:pe-4 [&:has(+[data-slot=data-grid-table-fill-body-cell]:last-child)]:pe-4 [&:has(+[data-slot=data-grid-table-fill-head-cell]:last-child)]:pe-4',
       }}
     >
-      <Card ref={cardRef} className="w-full gap-3 py-3.5">
-        <CardHeader className="items-center px-3.5">
+      <Card ref={cardRef} className="w-full gap-0 p-0">
+        <CardHeader className="items-center px-3.5 py-4">
           <CardTitle className="flex items-center gap-2">
             Target
             {isSaving ? (
@@ -944,21 +939,21 @@ export default function TargetDataGrid() {
           </CardAction>
         </CardHeader>
 
-        {error ? (
+        {error && (
           <div className="mx-3.5 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
             Gagal memuat target: {error.message}
           </div>
-        ) : null}
+        )}
 
         <DataGridContainer className="border-y">
-          <DataGridScrollArea>
+          <DataGridScrollArea className="h-[calc(100dvh-16rem)]">
             <DataGridTable />
           </DataGridScrollArea>
           <DataGridCellSelection apiRef={gridApiRef} />
         </DataGridContainer>
 
-        <CardFooter className="border-none bg-transparent! px-3.5 py-0">
-          <DataGridPagination />
+        <CardFooter className="border-none bg-transparent! px-3.5">
+          <DataGridPagination sizes={[10, 25, 50, 100]} />
         </CardFooter>
       </Card>
     </DataGrid>

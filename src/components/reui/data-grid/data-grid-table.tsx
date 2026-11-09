@@ -2129,10 +2129,10 @@ function DataGridTableBodyRow<TData extends object>({
         // scrolled content), so they get the same tint pre-mixed over the
         // background instead of inheriting the translucent row fill.
         props.getRowStatus &&
-          'data-[row-status=deleted]:bg-destructive/5 data-[row-status=deleted]:opacity-60 data-[row-status=dirty]:bg-amber-500/5 data-[row-status=new]:bg-green-500/5 data-[row-status=deleted]:[&_td]:line-through',
+          'data-[row-status=deleted]:bg-destructive/5 data-[row-status=deleted]:opacity-60 data-[row-status=dirty]:bg-amber-500/10 data-[row-status=new]:bg-green-500/5 data-[row-status=deleted]:[&_td]:line-through',
         props.getRowStatus &&
           props.tableLayout?.columnsPinnable &&
-          'data-[row-status=deleted]:[&>td[data-pinned]]:bg-[color-mix(in_oklab,var(--destructive)_5%,var(--data-grid-surface,var(--data-grid-card-surface,var(--background))))] data-[row-status=dirty]:[&>td[data-pinned]]:bg-[color-mix(in_oklab,var(--color-amber-500)_5%,var(--data-grid-surface,var(--data-grid-card-surface,var(--background))))] data-[row-status=new]:[&>td[data-pinned]]:bg-[color-mix(in_oklab,var(--color-green-500)_5%,var(--data-grid-surface,var(--data-grid-card-surface,var(--background))))]',
+          'data-[row-status=deleted]:[&>td[data-pinned]]:bg-[color-mix(in_oklab,var(--destructive)_5%,var(--data-grid-surface,var(--data-grid-card-surface,var(--background))))] data-[row-status=dirty]:[&>td[data-pinned]]:bg-[color-mix(in_oklab,var(--color-amber-500)_10%,var(--data-grid-surface,var(--data-grid-card-surface,var(--background))))] data-[row-status=new]:[&>td[data-pinned]]:bg-[color-mix(in_oklab,var(--color-green-500)_5%,var(--data-grid-surface,var(--data-grid-card-surface,var(--background))))]',
         rowStatus === 'new' && props.tableClassNames?.rowNew,
         rowStatus === 'dirty' && props.tableClassNames?.rowDirty,
         rowStatus === 'deleted' && props.tableClassNames?.rowDeleted,
