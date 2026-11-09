@@ -15,8 +15,10 @@ import { DataGridColumnHeader } from '@/components/reui/data-grid/data-grid-colu
 import { DataGridPagination } from '@/components/reui/data-grid/data-grid-pagination';
 import { DataGridScrollArea } from '@/components/reui/data-grid/data-grid-scroll-area';
 import { DataGridTable } from '@/components/reui/data-grid/data-grid-table';
+import type { DataGridI18nOverrides } from '@/components/reui/data-grid/data-grid-i18n';
 import { Badge } from '@/components/reui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Card,
   CardAction,
@@ -90,6 +92,45 @@ import type { OperatorGroup } from '@/types/operator';
 const EMPTY_LEADERS: Leader[] = [];
 const EMPTY_OPERATORS: OperatorGroup[] = [];
 
+// Semua teks bawaan ReUI data-grid (menu kolom, pagination, state) dalam
+// Bahasa Indonesia. Cukup tambahkan key yang ingin diubah; sisanya memakai
+// default ReUI.
+const TARGET_GRID_I18N: DataGridI18nOverrides = {
+  labels: {
+    sortAscending: 'Naik',
+    sortDescending: 'Turun',
+    pinColumnStart: 'Sematkan ke kiri',
+    pinColumnEnd: 'Sematkan ke kanan',
+    moveColumnStart: 'Geser ke kiri',
+    moveColumnEnd: 'Geser ke kanan',
+    columnsMenu: 'Kolom',
+    unpinColumn: (title) => `Lepas sematan kolom ${title}`,
+    toggleColumns: 'Tampilkan kolom',
+    rowCreate: 'Tambah baris',
+    pinRow: 'Sematkan baris',
+    unpinRow: 'Lepas sematan baris',
+    selectRow: 'Pilih baris',
+    selectAll: 'Pilih semua',
+    expandRow: 'Buka baris',
+    collapseRow: 'Tutup baris',
+    dragToReorder: 'Tarik untuk mengurutkan',
+    dragToReorderRow: 'Tarik untuk mengurutkan baris',
+    reorderingUnavailable: 'Pengurutan tidak tersedia',
+    loading: 'Memuat data...',
+    empty: 'Tidak ada data target',
+    allRowsLoaded: 'Semua data dimuat',
+    rowsPerPage: 'Baris per halaman',
+    paginationInfo: ({ from, to, count }) => `${from}–${to} dari ${count}`,
+    previousPage: 'Halaman sebelumnya',
+    nextPage: 'Halaman berikutnya',
+    goToPage: (page) => `Ke halaman ${page}`,
+    paginationEllipsis: '...',
+    filterSelectedCount: (count) => `${count} dipilih`,
+    filterNoResults: 'Tidak ada hasil.',
+    filterClear: 'Hapus filter',
+  },
+};
+
 const CELL_CONTROL_CLASS =
   'h-6! min-h-6! w-full rounded-none! border-0! bg-transparent! p-0! shadow-none! ring-0! outline-hidden! focus-within:ring-0! has-[[data-slot=input-group-control]:focus-visible]:border-transparent! has-[[data-slot=input-group-control]:focus-visible]:ring-0!';
 
@@ -104,6 +145,8 @@ function LineCell({
   value: string;
   onChange: (next: string) => void;
 }) {
+  const anchor = useComboboxAnchor();
+
   return (
     <Combobox
       items={LINE_GROUPS}
@@ -113,7 +156,12 @@ function LineCell({
       }}
     >
       <ComboboxInput placeholder="Cari line" className={CELL_CONTROL_CLASS} />
-      <ComboboxContent>
+      <ComboboxContent
+        anchor={anchor}
+        align="start"
+        sideOffset={8}
+        className="w-30"
+      >
         <ComboboxEmpty>Data tidak ditemukan.</ComboboxEmpty>
 
         <ComboboxList className="scroll-fade-y">
@@ -259,9 +307,9 @@ function PrcCell({
       </ComboboxChips>
       <ComboboxContent
         anchor={anchor}
-        // align="start"
-        // sideOffset={8}
-        // className="w-56"
+        align="start"
+        sideOffset={8}
+        className="w-30"
       >
         <ComboboxEmpty>
           {options.length ? 'Tidak ada PRC.' : 'Pilih SPO terlebih dahulu.'}
@@ -548,6 +596,7 @@ export default function TargetDataGrid() {
         meta: {
           headerTitle: 'Tanggal',
           cellClassName: 'text-xs tabular-nums text-muted-foreground',
+          skeleton: <Skeleton className="h-4 w-16" />,
         },
       },
       {
@@ -566,6 +615,7 @@ export default function TargetDataGrid() {
         size: 88,
         meta: {
           headerTitle: 'Line',
+          skeleton: <Skeleton className="h-6 w-14" />,
           cellEdit: {
             parse: (raw) => {
               const value = raw.trim();
@@ -591,6 +641,7 @@ export default function TargetDataGrid() {
         size: 108,
         meta: {
           headerTitle: 'Shift',
+          skeleton: <Skeleton className="h-6 w-16" />,
           cellEdit: {
             parse: (raw) => {
               const value = raw.trim();
@@ -615,6 +666,7 @@ export default function TargetDataGrid() {
         size: 135,
         meta: {
           headerTitle: 'SPO',
+          skeleton: <Skeleton className="h-6 w-20" />,
           cellEdit: {
             parse: (raw) => {
               const value = raw.trim();
@@ -642,6 +694,7 @@ export default function TargetDataGrid() {
         meta: {
           headerTitle: 'Style',
           cellClassName: 'text-muted-foreground',
+          skeleton: <Skeleton className="h-4 w-32" />,
         },
       },
       {
@@ -663,6 +716,7 @@ export default function TargetDataGrid() {
         size: 165,
         meta: {
           headerTitle: 'PRC',
+          skeleton: <Skeleton className="h-6 w-24" />,
           cellEdit: {
             parse: (raw, row) => {
               const options = Object.keys(styleGroup?.[row.spo]?.parts ?? {});
@@ -695,6 +749,7 @@ export default function TargetDataGrid() {
         meta: {
           headerTitle: 'Part',
           cellClassName: 'text-muted-foreground',
+          skeleton: <Skeleton className="h-4 w-28" />,
         },
       },
       {
@@ -708,6 +763,7 @@ export default function TargetDataGrid() {
           headerTitle: 'MP',
           cellClassName: 'text-end tabular-nums text-muted-foreground',
           headerClassName: 'justify-end',
+          skeleton: <Skeleton className="ms-auto h-4 w-6" />,
         },
       },
       {
@@ -721,6 +777,7 @@ export default function TargetDataGrid() {
           headerTitle: 'Jam',
           cellClassName: 'text-end tabular-nums',
           headerClassName: 'justify-end',
+          skeleton: <Skeleton className="ms-auto h-4 w-6" />,
           cellEdit: {
             control: 'text',
             parse: (raw) => {
@@ -753,6 +810,7 @@ export default function TargetDataGrid() {
         size: 170,
         meta: {
           headerTitle: 'Leader',
+          skeleton: <Skeleton className="h-6 w-24" />,
           cellEdit: {
             parse: (raw) => {
               const value = leaderByValue.get(raw.trim().toLowerCase());
@@ -783,6 +841,7 @@ export default function TargetDataGrid() {
         size: 220,
         meta: {
           headerTitle: 'Operator',
+          skeleton: <Skeleton className="h-6 w-32" />,
           cellEdit: {
             parse: (raw) => {
               return raw
@@ -816,6 +875,7 @@ export default function TargetDataGrid() {
           headerTitle: 'Target',
           cellClassName: 'text-end tabular-nums font-medium',
           headerClassName: 'justify-end',
+          skeleton: <Skeleton className="ms-auto h-4 w-8" />,
           cellEdit: {
             control: 'text',
             parse: (raw) => {
@@ -862,6 +922,7 @@ export default function TargetDataGrid() {
       table={table}
       recordCount={rows.length}
       isLoading={isPending}
+      i18n={TARGET_GRID_I18N}
       onCellsChange={handleCellsChange}
       onCellEditRequest={handleCellEditRequest}
       onCellsCopy={({ grid, cut }) => {
@@ -884,6 +945,8 @@ export default function TargetDataGrid() {
         cellFillHandle: true,
         cellFillHandleVariant: 'square',
         cellBorder: true,
+        headerSticky: true,
+        headerBackground: true,
         columnsResizable: true,
         columnsPinnable: true,
       }}
@@ -940,13 +1003,13 @@ export default function TargetDataGrid() {
         </CardHeader>
 
         {error && (
-          <div className="mx-3.5 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-            Gagal memuat target: {error.message}
+          <div className="mx-3.5 mb-3 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+            Gagal memuat data target: {error.message}
           </div>
         )}
 
         <DataGridContainer className="border-y">
-          <DataGridScrollArea className="h-[calc(100dvh-16rem)]">
+          <DataGridScrollArea className="h-[calc(90dvh-16rem)]">
             <DataGridTable />
           </DataGridScrollArea>
           <DataGridCellSelection apiRef={gridApiRef} />
