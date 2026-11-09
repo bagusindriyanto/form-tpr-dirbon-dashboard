@@ -73,7 +73,7 @@ const formSchema = z.object({
     .number({ error: 'Jam kerja wajib diisi.' })
     .int('Jam kerja harus bilangan bulat.')
     .min(1, 'Minimal 1 jam.')
-    .max(11, 'Maksimal 11 jam.'),
+    .max(10, 'Maksimal 10 jam.'),
   leader: z.string().min(1, 'Pilih satu leader.'),
   operators: z
     .array(z.string().min(1, 'Operator wajib diisi.'))
@@ -268,7 +268,7 @@ export default function TargetForm() {
                     aria-invalid={fieldState.invalid}
                     type="number"
                     min={1}
-                    max={11}
+                    max={10}
                     step={1}
                     inputMode="numeric"
                     placeholder="Contoh: 10"
