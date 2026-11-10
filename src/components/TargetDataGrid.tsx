@@ -408,7 +408,16 @@ export default function TargetDataGrid() {
 
   const stageChanges = useCallback((changes: TargetCellChange[]) => {
     if (!changes.length) return;
-    setPendingChanges((current) => mergeTargetChanges(current, changes));
+
+    // PRC selalu disimpan terurut supaya kolom PRC dan Part di sheet konsisten
+    // dengan urutan yang dipakai TargetForm saat menambah target.
+    const normalized = changes.map((change) =>
+      change.field === 'prcs'
+        ? { ...change, value: toTargetList(change.value).sort(comparePrc) }
+        : change,
+    );
+
+    setPendingChanges((current) => mergeTargetChanges(current, normalized));
   }, []);
 
   const stageField = useCallback(
