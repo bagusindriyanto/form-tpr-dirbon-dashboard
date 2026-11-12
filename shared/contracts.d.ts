@@ -2,6 +2,7 @@ export type PIC = 'Produksi' | 'MT' | 'Trainer' | 'QC';
 export type Shift = '1' | '2';
 export type OutputType = 'SPO' | 'GR';
 export type Section = 'TPR' | 'Dirbon';
+export type Division = 'tpr' | 'dirbon';
 export type ProblemAction = 'Start' | 'Finish';
 
 export type LineGroup = {

@@ -1,3 +1,41 @@
+function getJobInsertRow(
+  sheet: GoogleAppsScript.Spreadsheet.Sheet,
+  job: Job,
+  startRow: number,
+  helperCol: number,
+): number {
+  const lastRow = sheet.getLastRow();
+
+  if (lastRow < startRow) return startRow;
+  const groupId = [toDateSerial(job.tanggal), job.shift, job.line].join('-');
+
+  const matches = sheet
+    .getRange(startRow, helperCol + 1, lastRow - startRow + 1, 1)
+    .createTextFinder(groupId)
+    .matchEntireCell(true)
+    .findAll();
+
+  if (matches.length) {
+    return matches[matches.length - 1].getRow() + 1;
+  }
+
+  return getNextLKHRow(sheet, startRow);
+}
+
+function buildJobRowKey(job: Job, firstOperatorNip: Operator['nip']): string {
+  return [
+    toDateSerial(job.tanggal),
+    job.shift,
+    job.line,
+    job.type,
+    job.spo,
+    job.prcs,
+    firstOperatorNip,
+  ]
+    .map((value) => String(value).trim())
+    .join('-');
+}
+
 function getTarget(
   { line, shift, spo, prcs }: OutputKey,
   recordDate: Date,
@@ -98,6 +136,7 @@ function mergeJobSize(
   jobRows: number[],
   sizeCol: number,
   newSize: string,
+  mp: MatchedTarget['mp'],
 ) {
   const incoming = String(newSize ?? '').trim();
   if (!incoming || !jobRows.length) return;
@@ -118,156 +157,38 @@ function mergeJobSize(
   sizes.push(incoming);
   const merged = sizes.join(', '); // "L, M"
 
-  sheet.getRange(firstRow, sizeCol, jobRows.length, 1).setValue(merged);
+  sheet.getRange(firstRow, sizeCol, mp, 1).setValue(merged);
 }
 
-function findJobsRowsDirbon(
+function findJobsRows(
   sheet: GoogleAppsScript.Spreadsheet.Sheet,
   jobs: Job[],
-): { job: Job; rows: number[] }[] {
-  if (!jobs.length) return [];
-  const START_ROW = 4;
+  jobIds: string[],
+  startRow: number,
+  helperCol: number,
+): JobBlock[] {
+  const rowsMap = new Map<string, number[]>(jobIds.map((id) => [id, []]));
   const lastRow = sheet.getLastRow();
 
-  if (lastRow < START_ROW) {
-    return jobs.map((job): { job: Job; rows: number[] } => ({
-      job,
-      rows: [],
-    }));
+  if (lastRow >= startRow) {
+    sheet
+      .getRange(startRow, helperCol, lastRow - startRow + 1, 1)
+      .getValues()
+      .forEach(([value]: CellValue[], i) => {
+        const rows = rowsMap.get(String(value).trim());
+        if (rows) rows.push(startRow + i);
+      });
   }
 
-  const spo = jobs[0].spo;
-
-  const hits = sheet
-    .getRange(START_ROW, 10, lastRow - START_ROW + 1, 1)
-    .createTextFinder(toString(spo))
-    .matchEntireCell(true)
-    .findAll();
-
-  if (!hits.length) {
-    return jobs.map((job): { job: Job; rows: number[] } => ({
-      job,
-      rows: [],
-    }));
-  }
-
-  const rowNums = hits.map((row) => row.getRow());
-  const firstMatchRow = rowNums[0];
-  const lastMatchRow = rowNums[rowNums.length - 1];
-
-  const data: CellValue[][] = sheet
-    .getRange(firstMatchRow, 1, lastMatchRow - firstMatchRow + 1, 18)
-    .getValues();
-
-  const result: { job: Job; rows: number[] }[] = [];
-
-  jobs.forEach((job) => {
-    const rows: number[] = [];
-
-    for (const rowNum of rowNums) {
-      const row = data[rowNum - firstMatchRow];
-
-      const same =
-        row[0] instanceof Date &&
-        row[0].getTime() === job.tanggal.getTime() &&
-        toString(row[2]) === job.shift &&
-        toString(row[3]) === job.line &&
-        toString(row[7]) === job.type &&
-        toString(row[9]) === job.spo &&
-        toString(row[11]) === job.style &&
-        toString(row[15]) === job.prcs &&
-        toString(row[16]) === job.parts; //&& row[17] === job.size
-
-      if (same) {
-        rows.push(rowNum);
-      }
-    }
-
-    result.push({
-      job,
-      rows,
-    });
-  });
-
-  return result;
-}
-
-function findJobsRowsTPR(
-  sheet: GoogleAppsScript.Spreadsheet.Sheet,
-  jobs: Job[],
-): { job: Job; rows: number[] }[] {
-  if (!jobs.length) return [];
-  const START_ROW = 3;
-  const lastRow = sheet.getLastRow();
-
-  if (lastRow < START_ROW) {
-    return jobs.map((job): { job: Job; rows: number[] } => ({
-      job,
-      rows: [],
-    }));
-  }
-
-  const spo = jobs[0].spo;
-
-  const hits = sheet
-    .getRange(START_ROW, 9, lastRow - START_ROW + 1, 1)
-    .createTextFinder(toString(spo))
-    .matchEntireCell(true)
-    .findAll();
-
-  if (!hits.length) {
-    return jobs.map((job): { job: Job; rows: number[] } => ({
-      job,
-      rows: [],
-    }));
-  }
-
-  const rowNums = hits.map((row) => row.getRow());
-  const firstMatchRow = rowNums[0];
-  const lastMatchRow = rowNums[rowNums.length - 1];
-
-  const data: CellValue[][] = sheet
-    .getRange(firstMatchRow, 1, lastMatchRow - firstMatchRow + 1, 18)
-    .getValues();
-
-  const result: { job: Job; rows: number[] }[] = [];
-
-  jobs.forEach((job) => {
-    const rows: number[] = [];
-
-    for (const rowNum of rowNums) {
-      const row = data[rowNum - firstMatchRow];
-
-      const same =
-        row[0] instanceof Date &&
-        row[0].getTime() === job.tanggal.getTime() &&
-        toString(row[6]) === job.shift &&
-        toString(row[5]) === job.line &&
-        toString(row[7]) === job.type &&
-        toString(row[8]) === job.spo &&
-        toString(row[10]) === job.style &&
-        toString(row[14]) === job.prcs &&
-        toString(row[15]) === job.parts;
-
-      if (same) {
-        rows.push(rowNum);
-      }
-    }
-
-    result.push({
-      job,
-      rows,
-    });
-  });
-
-  return result;
+  return jobs.map((job, i) => ({ job, rows: rowsMap.get(jobIds[i]) ?? [] }));
 }
 
 function createJobBlocksDirbon(
   sheet: GoogleAppsScript.Spreadsheet.Sheet,
   target: MatchedTarget,
   jobs: Job[],
-): { job: Job; rows: number[] }[] {
+  { startRow, helperCol }: Pick<LKHConfig, 'startRow' | 'helperCol'>,
+): JobBlock[] {
   if (!jobs.length) return [];
   const { operators, leader, mp } = target;
 
@@ -275,11 +196,11 @@ function createJobBlocksDirbon(
     throw new Error(`Operator Line ${jobs[0].line} kosong`);
   }
 
-  const START_ROW = 4;
-  const writeRow = getNextLKHRow(sheet, START_ROW);
+  const writeRow = getJobInsertRow(sheet, jobs[0], startRow, helperCol);
 
   const data: CellValue[][] = [];
-  const createdJobs: { job: Job; rows: number[] }[] = [];
+  const createdJobs: JobBlock[] = [];
+  const week = getISOWeek(jobs[0].tanggal);
 
   let rowOffset = 0;
 
@@ -291,7 +212,7 @@ function createJobBlocksDirbon(
 
       data.push([
         job.tanggal,
-        getISOWeek(job.tanggal),
+        week,
         job.shift,
         job.line,
         leader,
@@ -299,15 +220,12 @@ function createJobBlocksDirbon(
         `=IFERROR(VLOOKUP(F${currentRow};'Database NIK'!B:C;2;FALSE);"")`,
         job.type,
         mp,
-
         job.spo,
         `=IFERROR(INDEX('DATABASE SPO (KODE STYLE)'!$C:$C;MATCH(RIGHT($J${currentRow};8);'DATABASE SPO (KODE STYLE)'!$A:$A;0);1);"")`,
         job.style,
-
         `=IFERROR(VLOOKUP(K${currentRow};'DATABASE SPO (KODE STYLE)'!$C:$F;4;FALSE);"")`,
         `=MID(L${currentRow};FIND("-";L${currentRow})+1;FIND(CHAR(160);SUBSTITUTE(L${currentRow};"-";CHAR(160);2))-1-FIND("-";L${currentRow}))`,
         '',
-
         job.prcs,
         job.parts,
         job.size,
@@ -324,7 +242,17 @@ function createJobBlocksDirbon(
     });
   }
 
+  const totalRows = data.length;
+
+  sheet.insertRowsBefore(writeRow, totalRows);
   sheet.getRange(writeRow, 1, data.length, 18).setValues(data);
+  sheet
+    .getRange(writeRow - 1, 32, 1, 24)
+    .copyTo(
+      sheet.getRange(writeRow, 32, totalRows, 24),
+      SpreadsheetApp.CopyPasteType.PASTE_FORMULA,
+      false,
+    );
 
   return createdJobs;
 }
@@ -333,7 +261,8 @@ function createJobBlocksTPR(
   sheet: GoogleAppsScript.Spreadsheet.Sheet,
   target: MatchedTarget,
   jobs: Job[],
-): { job: Job; rows: number[] }[] {
+  { startRow, helperCol }: Pick<LKHConfig, 'startRow' | 'helperCol'>,
+): JobBlock[] {
   if (!jobs.length) return [];
   const { operators, leader } = target;
 
@@ -341,10 +270,11 @@ function createJobBlocksTPR(
     throw new Error(`Operator Line ${jobs[0].line} kosong`);
   }
 
-  const START_ROW = 3;
-  const writeRow = getNextLKHRow(sheet, START_ROW);
+  const writeRow = getJobInsertRow(sheet, jobs[0], startRow, helperCol);
+
   const data: CellValue[][] = [];
-  const createdJobs: { job: Job; rows: number[] }[] = [];
+  const createdJobs: JobBlock[] = [];
+  const week = getISOWeek(jobs[0].tanggal);
 
   let rowOffset = 0;
 
@@ -356,7 +286,7 @@ function createJobBlocksTPR(
 
       data.push([
         job.tanggal,
-        getISOWeek(job.tanggal),
+        week,
         leader,
         operator,
         `=XLOOKUP(D${currentRow};'Database NIK'!B:B;'Database NIK'!C:C;"NOT FOUND")`,
@@ -386,172 +316,124 @@ function createJobBlocksTPR(
     });
   }
 
-  sheet.getRange(writeRow, 1, data.length, 18).setValues(data);
+  const totalRows = data.length;
+
+  sheet.insertRowsBefore(writeRow, totalRows);
+  sheet.getRange(writeRow, 1, data.length, 17).setValues(data);
+  sheet
+    .getRange(writeRow - 1, 30, 1, 14)
+    .copyTo(
+      sheet.getRange(writeRow, 30, totalRows, 14),
+      SpreadsheetApp.CopyPasteType.PASTE_FORMULA,
+      false,
+    );
 
   return createdJobs;
 }
 
-function updateLKHTPR(formData: OutputFormData, recordDate: Date) {
+function updateLKH(key: Division, formData: OutputFormData, recordDate: Date) {
+  const config = LKH_SHEETS[key];
+  if (!config) throw new Error(`Konfigurasi LKH '${key}' tidak dikenal`);
+
   const { line, shift, type, spo, style, prcs, parts, size, hour, actual } =
     formData;
-  const formattedRecordDate = toDateString(recordDate);
 
-  const target = getTarget(formData, recordDate);
-
-  if (!target) {
-    throw new Error(
-      `Target untuk Line ${line} shift ${shift} tanggal ${formattedRecordDate} tidak ditemukan`,
-    );
-  }
-
-  // lkh
-  const {
-    lkh: { spreadsheetId, sheetNames },
-  } = SPREADSHEET_CONFIG;
-  const lkhSS = SpreadsheetApp.openById(spreadsheetId);
-  const sheetName = sheetNames.tpr;
-  const sheet = lkhSS.getSheetByName(sheetName);
-  if (!sheet) {
-    throw new Error(`Sheet '${sheetName}' tidak ditemukan`);
-  }
-  // =====================================================
-  // VALIDASI JAM
-  // =====================================================
-
+  // Validasi jam di awal, gagal cepat sebelum membuka spreadsheet
   const jam = Number(hour);
-
   if (!Number.isInteger(jam) || jam < 1 || jam > 10) {
     throw new Error(`Jam '${hour}' tidak valid. Harus 1-10`);
   }
+  const outputColumn = config.outputBase + jam;
 
-  const outputColumn = 18 + jam;
+  const startExecution = Date.now();
+  let t = startExecution;
+  const lap = (label: string) => {
+    const now = Date.now();
+    Logger.log(`Waktu ${label}: ${now - t} ms`);
+    t = now;
+  };
 
-  // jobs
-  const jobs = prcs.map(
-    (prc, i): Job => ({
-      tanggal: recordDate,
-      shift,
-      line: line.replace(/^([A-Z])0+/, '$1'),
-      type,
-      spo,
-      style,
-      prcs: prc,
-      parts: parts[i],
-      size,
-    }),
-  );
+  // Target
+  const target = getTarget(formData, recordDate);
+  lap('get Target');
+  if (!target) {
+    throw new Error(
+      `Target untuk Line ${line} shift ${shift} tanggal ${toDateString(recordDate)} tidak ditemukan`,
+    );
+  }
 
-  const jobResults: { job: Job; rows: number[] }[] = [];
+  // Sheet LKH
+  const {
+    lkh: { spreadsheetId, sheetNames },
+  } = SPREADSHEET_CONFIG;
+  const sheetName = sheetNames[key];
+  const sheet =
+    SpreadsheetApp.openById(spreadsheetId).getSheetByName(sheetName);
+  if (!sheet) throw new Error(`Sheet '${sheetName}' tidak ditemukan`);
+  lap('load LKH');
+
+  // Jobs
+  const normalizedLine = line.replace(/^([A-Z])0+/, '$1');
+  const jobs = prcs.map((prc, i) => ({
+    tanggal: recordDate,
+    shift,
+    line: normalizedLine,
+    type,
+    spo,
+    style,
+    prcs: prc,
+    parts: parts[i],
+    size,
+  }));
+  const firstOperatorNip = target.operators[0];
+  const jobIds = jobs.map((job) => buildJobRowKey(job, firstOperatorNip));
+  lap('mapping Job dan Id');
+
+  // Cari job yang sudah ada, sisanya dibuat baru
+  const jobResults: JobBlock[] = [];
   const newJobs: Job[] = [];
 
-  const foundJobs = findJobsRowsTPR(sheet, jobs);
+  const foundJobs = findJobsRows(
+    sheet,
+    jobs,
+    jobIds,
+    config.startRow,
+    config.helperCol,
+  );
+  lap('find Job Rows');
 
-  for (const result of foundJobs) {
+  foundJobs.forEach((result) => {
     if (result.rows.length) {
-      mergeJobSize(sheet, result.rows, 17, result.job.size);
+      mergeJobSize(
+        sheet,
+        result.rows,
+        config.sizeCol,
+        result.job.size,
+        target.mp,
+      );
       jobResults.push(result);
     } else {
       newJobs.push(result.job);
     }
-  }
+  });
+  lap('merge size');
 
   if (newJobs.length) {
-    const createdJobs = createJobBlocksTPR(sheet, target, newJobs);
-    jobResults.push(...createdJobs);
+    jobResults.push(...config.createBlocks(sheet, target, newJobs, config));
+    lap('create Job Block');
   }
 
-  const actualValue = Number(actual) || 0;
-
-  const ranges = jobResults.map((result) =>
-    sheet.getRange(result.rows[0], outputColumn).getA1Notation(),
-  );
-
-  if (ranges.length) {
-    const currentValue = Number(sheet.getRange(ranges[0]).getValue()) || 0;
-
-    sheet.getRangeList(ranges).setValue(currentValue + actualValue);
-  }
-}
-
-function updateLKHDirbon(formData: OutputFormData, recordDate: Date) {
-  const { line, shift, type, spo, style, prcs, parts, size, hour, actual } =
-    formData;
-  const formattedRecordDate = toDateString(recordDate);
-
-  const target = getTarget(formData, recordDate);
-
-  if (!target) {
-    throw new Error(
-      `Target untuk Line ${line} shift ${shift} tanggal ${formattedRecordDate} tidak ditemukan`,
+  // Tulis output jam
+  if (jobResults.length) {
+    const actualValue = Number(actual) || 0;
+    const firstRows = jobResults.map((result) => result.rows[0]);
+    const currentValue =
+      Number(sheet.getRange(firstRows[0], outputColumn).getValue()) || 0;
+    const ranges = firstRows.map((row) =>
+      sheet.getRange(row, outputColumn).getA1Notation(),
     );
-  }
-
-  // lkh
-  const {
-    lkh: { spreadsheetId, sheetNames },
-  } = SPREADSHEET_CONFIG;
-  const lkhSS = SpreadsheetApp.openById(spreadsheetId);
-  const sheetName = sheetNames.dirbon;
-  const sheet = lkhSS.getSheetByName(sheetName);
-  if (!sheet) {
-    throw new Error(`Sheet '${sheetName}' tidak ditemukan`);
-  }
-
-  // =====================================================
-  // VALIDASI JAM
-  // =====================================================
-
-  const jam = Number(hour);
-
-  if (!Number.isInteger(jam) || jam < 1 || jam > 10) {
-    throw new Error(`Jam '${hour}' tidak valid. Harus 1-10`);
-  }
-
-  const outputColumn = 19 + jam;
-
-  // job
-  const jobs = prcs.map(
-    (prc, i): Job => ({
-      tanggal: recordDate,
-      shift,
-      line: line.replace(/^([A-Z])0+/, '$1'),
-      type,
-      spo,
-      style,
-      prcs: prc,
-      parts: parts[i],
-      size,
-    }),
-  );
-
-  const jobResults: { job: Job; rows: number[] }[] = [];
-  const newJobs: Job[] = [];
-
-  const foundJobs = findJobsRowsDirbon(sheet, jobs);
-
-  for (const result of foundJobs) {
-    if (result.rows.length) {
-      mergeJobSize(sheet, result.rows, 18, result.job.size);
-      jobResults.push(result);
-    } else {
-      newJobs.push(result.job);
-    }
-  }
-
-  if (newJobs.length) {
-    const createdJobs = createJobBlocksDirbon(sheet, target, newJobs);
-    jobResults.push(...createdJobs);
-  }
-
-  const actualValue = Number(actual) || 0;
-
-  const ranges = jobResults.map((result) =>
-    sheet.getRange(result.rows[0], outputColumn).getA1Notation(),
-  );
-
-  if (ranges.length) {
-    const currentValue = Number(sheet.getRange(ranges[0]).getValue()) || 0;
-
     sheet.getRangeList(ranges).setValue(currentValue + actualValue);
   }
+  lap('set value');
+  Logger.log(`Waktu Total: ${Date.now() - startExecution} ms`);
 }

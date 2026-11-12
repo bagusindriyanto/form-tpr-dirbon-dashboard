@@ -27,3 +27,5 @@ type Job = {
   parts: string;
   size: string;
 };
+
+type JobBlock = { job: Job; rows: number[] };

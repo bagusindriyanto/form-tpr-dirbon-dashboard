@@ -140,3 +140,11 @@ function parseDateTimeString(value: string): Date {
     DATE_TIME_FORMAT,
   );
 }
+
+function toDateSerial(date: Date): number {
+  return (
+    (Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) -
+      Date.UTC(1899, 11, 30)) /
+    86400000
+  );
+}
