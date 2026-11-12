@@ -125,3 +125,11 @@ function getShiftByTimestamp(timestamp: Date): Shift {
 
   return currentMinute >= lowerLimit && currentMinute < upperLimit ? '1' : '2';
 }
+
+function toDateSerial(date: Date): number {
+  return (
+    (Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) -
+      Date.UTC(1899, 11, 30)) /
+    86400000
+  );
+}

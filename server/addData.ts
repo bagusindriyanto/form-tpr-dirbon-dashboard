@@ -20,15 +20,35 @@ function addTarget(targetFormData: TargetFormData) {
       operators,
       target,
     } = targetFormData;
-    const recordDate = getShiftDate(shift);
     const manPower = operators.length;
 
     const lastRow = sheet.getLastRow();
     const nextRow = lastRow + 1;
 
+    const recordDate = getShiftDate(shift);
+    const targetId = [
+      toDateSerial(recordDate),
+      line,
+      shift,
+      spo,
+      prcs.join(', '),
+    ].join('-');
+
     sheet.appendRow([
       createdAt,
-      recordDate,
+      `=IF(
+        D${nextRow}=2,
+        INT(A${nextRow})+IF(
+          MOD(A${nextRow},1)>=IF(
+            WEEKDAY(INT(A${nextRow}),2)=7,
+            TIME(19,30,0),
+            TIME(19,0,0)
+          ),
+          1,
+          0
+        ),
+        INT(A${nextRow})
+      )`,
       line,
       shift,
       spo,
@@ -41,6 +61,7 @@ function addTarget(targetFormData: TargetFormData) {
       operators.join(', '),
       target,
       `=ROW()`,
+      targetId,
     ]);
 
     sheet.getRange(`B${nextRow}`).setNumberFormat('yyyy-MM-dd');
@@ -68,9 +89,9 @@ function addOutput(outputFormData: OutputFormData) {
 
     // 1. Menambahkan formData ke LKH
     if (line.startsWith('D')) {
-      updateLKHDirbon(outputFormData, recordDate);
+      updateLKH('dirbon', outputFormData, recordDate);
     } else if (line.startsWith('T')) {
-      updateLKHTPR(outputFormData, recordDate);
+      updateLKH('tpr', outputFormData, recordDate);
     }
 
     // 2. Menambahkan formData ke Trial Form TPR Dirbon
@@ -85,7 +106,19 @@ function addOutput(outputFormData: OutputFormData) {
 
     sheet.appendRow([
       createdAt,
-      recordDate,
+      `=IF(
+        D${nextRow}=2,
+        INT(A${nextRow})+IF(
+          MOD(A${nextRow},1)>=IF(
+            WEEKDAY(INT(A${nextRow}),2)=7,
+            TIME(19,30,0),
+            TIME(19,0,0)
+          ),
+          1,
+          0
+        ),
+        INT(A${nextRow})
+      )`,
       line,
       shift,
       type,
