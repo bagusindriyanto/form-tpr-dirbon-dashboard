@@ -302,7 +302,6 @@ function createJobBlocksTPR(
         job.prcs,
         job.parts,
         job.size,
-        '',
       ]);
 
       jobRows.push(currentRow);
