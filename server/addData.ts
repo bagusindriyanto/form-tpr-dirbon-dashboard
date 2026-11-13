@@ -26,13 +26,7 @@ function addTarget(targetFormData: TargetFormData) {
     const nextRow = lastRow + 1;
 
     const recordDate = getShiftDate(shift);
-    const targetId = [
-      toDateSerial(recordDate),
-      line,
-      shift,
-      spo,
-      prcs.join(', '),
-    ].join('-');
+    const targetId = [toDateSerial(recordDate), line, shift, spo].join('-');
 
     sheet.appendRow([
       createdAt,
